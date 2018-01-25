@@ -1,0 +1,18 @@
+File from: /inside/home/khoulaha/SingleViewPredictors/
+./Pathway/OncogenicGeneSets/2015-07-09_SignatureByGeneMatrix.txt
+./Pathway/TranscriptionFactorTargets/2015-07-13_SignatureByGeneMatrix.txt
+./Pathway/MotifGeneSets/2015-07-09_SignatureByGeneMatrix.txt
+./Pathway/PositionalGeneSets/2015-07-09_SignatureByGeneMatrix.txt
+./Pathway/ImmunologicalGeneSets/2015-07-13_SignatureByGeneMatrix.txt
+./Pathway/HallmarkGeneSets/2015-07-09_SignatureByGeneMatrix.txt
+
+
+
+Files from: /projects/sysbio/users/graim/MVL/views/
+
+### CHROMATIN MODIFYING ENZYMES ##
+Gene set defined by: New nomenclature for chromatin-modifying enzymes. Allis CD et al. Cell 2007 Nov;131(4):633-636
+Downloaded gene set from: http://www.genenames.org/cgi-bin/genefamilies/set/484
+Date: August 13, 2015
+
+druggable target list received from Yulia (/projects/sysbio/projects/DruggableGenomeSpace/ on tap)

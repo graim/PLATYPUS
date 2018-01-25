@@ -1,0 +1,66 @@
+HGNC ID	Approved Symbol	Approved Name	Status	Previous Symbols	Synonyms	Chromosome	Accession Numbers	RefSeq IDs	Gene Family Tag	Gene family description	Gene family ID
+4821	HAT1	histone acetyltransferase 1	Approved		KAT1	2q31.2-q33.1	AF030424	NM_003642	KAT	K(lysine) acetyltransferases	486
+4667	GTF3C4	general transcription factor IIIC, polypeptide 4, 90kDa	Approved		TFIIIC90, KAT12	9q34.3	AF142328		KAT	K(lysine) acetyltransferases	486
+7668	NCOA1	nuclear receptor coactivator 1	Approved		SRC1, F-SRC-1, NCoA-1, KAT13A, RIP160, bHLHe74	2p23	U40396	NM_147223	KAT	K(lysine) acetyltransferases	486
+7670	NCOA3	nuclear receptor coactivator 3	Approved		RAC3, AIB1, ACTR, p/CIP, TRAM-1, CAGH16, TNRC16, KAT13B, bHLHe42, SRC-3, SRC3	20q12	AF012108	NM_006534	KAT	K(lysine) acetyltransferases	486
+7669	NCOA2	nuclear receptor coactivator 2	Approved		TIF2, GRIP1, NCoA-2, KAT13C, bHLHe75	8q13.3	X97674		KAT	K(lysine) acetyltransferases	486
+2082	CLOCK	clock circadian regulator	Approved		KIAA0334, KAT13D, bHLHe8	4q12	AF011568	NM_004898	KAT	K(lysine) acetyltransferases	486
+4201	KAT2A	K(lysine) acetyltransferase 2A	Approved	GCN5L2	GCN5, PCAF-b	17q12-q21	AF029777	NM_021078	KAT	K(lysine) acetyltransferases	486
+8638	KAT2B	K(lysine) acetyltransferase 2B	Approved	PCAF	P/CAF, GCN5, GCN5L	3p24	U57316	NM_003884	KAT	K(lysine) acetyltransferases	486
+2348	CREBBP	CREB binding protein	Approved	RSTS	RTS, CBP, KAT3A	16p13.3	U85962	NM_004380	KAT	K(lysine) acetyltransferases	486
+3373	EP300	E1A binding protein p300	Approved		p300, KAT3B	22q13.2	U01877	NM_001429	KAT	K(lysine) acetyltransferases	486
+11535	TAF1	TAF1 RNA polymerase II, TATA box binding protein (TBP)-associated factor, 250kDa	Approved	TAF2A, BA2R, CCG1, CCGS, DYT3	NSCL2, TAFII250, KAT4, DYT3/TAF1	Xq13.1		NM_004606	KAT	K(lysine) acetyltransferases	486
+5275	KAT5	K(lysine) acetyltransferase 5	Approved	HTATIP	TIP60, PLIP, cPLA2, HTATIP1, ESA1, ZC2HC5	11q13	U74667	NM_006388	KAT	K(lysine) acetyltransferases	486
+13013	KAT6A	K(lysine) acetyltransferase 6A	Approved	ZNF220, RUNXBP2, MYST3	MOZ, ZC2HC6A	8p11	U47742	NM_006766	KAT	K(lysine) acetyltransferases	486
+17582	KAT6B	K(lysine) acetyltransferase 6B	Approved	MYST4	querkopf, qkf, Morf, MOZ2, ZC2HC6B	10q22.2	AF113514	NM_012330	KAT	K(lysine) acetyltransferases	486
+17016	KAT7	K(lysine) acetyltransferase 7	Approved	MYST2	HBOA, HBO1, ZC2HC7	17q21.32	AF074606	NM_007067	KAT	K(lysine) acetyltransferases	486
+17933	KAT8	K(lysine) acetyltransferase 8	Approved	MYST1	MOF, FLJ14040, hMOF, ZC2HC8	16p11.1	AF217501	NM_032188	KAT	K(lysine) acetyltransferases	486
+20696	ELP3	elongator acetyltransferase complex subunit 3	Approved		FLJ10422, KAT9	8p21.1		NM_018091	KAT	K(lysine) acetyltransferases	486
+29079	KDM1A	lysine (K)-specific demethylase 1A	Approved	AOF2, KDM1	KIAA0601, BHC110, LSD1	1p36.12	AL031428	NM_015013	KDM	Lysine (K)-specific demethylases	485
+21577	KDM1B	lysine (K)-specific demethylase 1B	Approved	C6orf193, AOF1	FLJ34109, FLJ33898, dJ298J15.2, bA204B7.3, FLJ43328, LSD2	6p22.3	AK125318	NM_153042	KDM	Lysine (K)-specific demethylases	485
+13606	KDM2A	lysine (K)-specific demethylase 2A	Approved	FBXL11	KIAA1004, FBL11, LILINA, DKFZP434M1735, FBL7, FLJ00115, CXXC8, JHDM1A	11q13.1	BC047486	NM_012308	KDM	Lysine (K)-specific demethylases	485
+13610	KDM2B	lysine (K)-specific demethylase 2B	Approved	FBXL10	PCCX2, CXXC2, Fbl10, JHDM1B	12q24.31	AJ459424	NM_032590	KDM	Lysine (K)-specific demethylases	485
+20815	KDM3A	lysine (K)-specific demethylase 3A	Approved	JMJD1, JMJD1A	TSGA, KIAA0742, JHMD2A	2p11.2	AB018285	NM_018433	KDM	Lysine (K)-specific demethylases	485
+1337	KDM3B	lysine (K)-specific demethylase 3B	Approved	C5orf7, JMJD1B	KIAA1082, NET22	5q31	AF251039	NM_016604	KDM	Lysine (K)-specific demethylases	485
+22978	KDM4A	lysine (K)-specific demethylase 4A	Approved	JMJD2, JMJD2A	KIAA0677, JHDM3A, TDRD14A	1p34.1	AB014577	NM_014663	KDM	Lysine (K)-specific demethylases	485
+29136	KDM4B	lysine (K)-specific demethylase 4B	Approved	JMJD2B	KIAA0876, TDRD14B	19p13.3	AB020683	NM_015015	KDM	Lysine (K)-specific demethylases	485
+17071	KDM4C	lysine (K)-specific demethylase 4C	Approved	JMJD2C	GASC1, KIAA0780, TDRD14C	9p24-p23	AB018323	NM_015061	KDM	Lysine (K)-specific demethylases	485
+25498	KDM4D	lysine (K)-specific demethylase 4D	Approved	JMJD2D	FLJ10251	11q21	AK001113	NM_018039	KDM	Lysine (K)-specific demethylases	485
+37098	KDM4E	lysine (K)-specific demethylase 4E	Approved	KDM4DL	JMJD2E	11q21	BC157851	NM_001161630	KDM	Lysine (K)-specific demethylases	485
+9886	KDM5A	lysine (K)-specific demethylase 5A	Approved	RBBP2, JARID1A		12p13.33		NM_005056	KDM	Lysine (K)-specific demethylases	485
+18039	KDM5B	lysine (K)-specific demethylase 5B	Approved	JARID1B	RBBP2H1A, PLU-1, CT31, PPP1R98	1q32.1	AJ243706	NM_006618	KDM	Lysine (K)-specific demethylases	485
+11114	KDM5C	lysine (K)-specific demethylase 5C	Approved	SMCX, JARID1C, MRX13	DXS1272E, XE169	Xp11.22-p11.21	Z29650	NM_004187	KDM	Lysine (K)-specific demethylases	485
+11115	KDM5D	lysine (K)-specific demethylase 5D	Approved	HYA, HY, SMCY, JARID1D	KIAA0234	Yq11	U52191	NM_004653	KDM	Lysine (K)-specific demethylases	485
+12637	KDM6A	lysine (K)-specific demethylase 6A	Approved	UTX		Xp11.2	AF000992	NM_021140	KDM	Lysine (K)-specific demethylases	485
+29012	KDM6B	lysine (K)-specific demethylase 6B	Approved	JMJD3	KIAA0346	17p13.1	AB002344	XM_043272	KDM	Lysine (K)-specific demethylases	485
+22224	KDM7A	lysine (K)-specific demethylase 7A	Approved	JHDM1D	KIAA1718	7q34		NM_030647	KDM	Lysine (K)-specific demethylases	485
+20672	PHF8	PHD finger protein 8	Approved		ZNF422, KIAA1111, JHDM1F	Xp11.22	AB029034	NM_015107	KDM	Lysine (K)-specific demethylases	485
+25840	KDM8	lysine (K)-specific demethylase 8	Approved	JMJD5	FLJ13798	16p12.1	AK023860	NM_024773	KDM	Lysine (K)-specific demethylases	485
+8920	PHF2	PHD finger protein 2	Approved		KIAA0662, JHDM1E, CENP-35	9q22	AF043725	NM_005392	KDM	Lysine (K)-specific demethylases	485
+11479	SUV39H1	suppressor of variegation 3-9 homolog 1 (Drosophila)	Approved	SUV39H	KMT1A	Xp11.23	AF019968	NM_003173	KMT	Lysine (K)-specific methyltransferases	487
+17287	SUV39H2	suppressor of variegation 3-9 homolog 2 (Drosophila)	Approved		FLJ23414, KMT1B	10p13	AK027067	NM_024670	KMT	Lysine (K)-specific methyltransferases	487
+14129	EHMT2	euchromatic histone-lysine N-methyltransferase 2	Approved	C6orf30, BAT8	G9A, Em:AF134726.3, NG36/G9a, KMT1C	6p21.3	AF134726	NM_006709	KMT	Lysine (K)-specific methyltransferases	487
+24650	EHMT1	euchromatic histone-lysine N-methyltransferase 1	Approved		Eu-HMTase1, FLJ12879, KIAA1876, bA188C12.1, KMT1D	9q34.3	AY083210	NM_024757	KMT	Lysine (K)-specific methyltransferases	487
+10761	SETDB1	SET domain, bifurcated 1	Approved		KG1T, KIAA0067, ESET, KMT1E, TDRD21	1q21	D31891	NM_001145415	KMT	Lysine (K)-specific methyltransferases	487
+20263	SETDB2	SET domain, bifurcated 2	Approved	C13orf4	CLLD8, CLLL8, KMT1F	13q14	AF334407	NM_031915	KMT	Lysine (K)-specific methyltransferases	487
+7132	KMT2A	lysine (K)-specific methyltransferase 2A	Approved	MLL	TRX1, HRX, ALL-1, HTRX1, CXXC7, MLL1A	11q23	L04284	NM_005933	KMT	Lysine (K)-specific methyltransferases	487
+15840	KMT2B	lysine (K)-specific methyltransferase 2B	Approved		KIAA0304, MLL2, TRX2, HRX2, WBP7, MLL1B, MLL4, CXXC10	19q13.12	AJ007041	NM_014727	KMT	Lysine (K)-specific methyltransferases	487
+13726	KMT2C	lysine (K)-specific methyltransferase 2C	Approved	MLL3	KIAA1506, HALR	7q36	AF264750		KMT	Lysine (K)-specific methyltransferases	487
+7133	KMT2D	lysine (K)-specific methyltransferase 2D	Approved	TNRC21, MLL2	ALR, MLL4, CAGL114	12q13.12	AF010403		KMT	Lysine (K)-specific methyltransferases	487
+18541	KMT2E	lysine (K)-specific methyltransferase 2E	Approved	MLL5	HDCMC04P	7q22.1	AF067804		KMT	Lysine (K)-specific methyltransferases	487
+29010	SETD1A	SET domain containing 1A	Approved		KIAA0339, Set1, KMT2F	16p11.2	AB002337	NM_014712	KMT	Lysine (K)-specific methyltransferases	487
+29187	SETD1B	SET domain containing 1B	Approved		KIAA1076, Set1B, KMT2G	12q24.31	AB028999	XM_037523	KMT	Lysine (K)-specific methyltransferases	487
+19088	ASH1L	ash1 (absent, small, or homeotic)-like (Drosophila)	Approved		huASH1, ASH1, ASH1L1, KMT2H	1q22	AB037841	NM_018489	KMT	Lysine (K)-specific methyltransferases	487
+18420	SETD2	SET domain containing 2	Approved		HYPB, HIF-1, KIAA1732, FLJ23184, KMT3A	3p21.31	AJ238403	NM_014159	KMT	Lysine (K)-specific methyltransferases	487
+14234	NSD1	nuclear receptor binding SET domain protein 1	Approved	STO	ARA267, FLJ22263, KMT3B	5q35	AK026066	NM_172349	KMT	Lysine (K)-specific methyltransferases	487
+20982	SMYD2	SET and MYND domain containing 2	Approved		HSKM-B, ZMYND14, KMT3C	1q32.3	AF226053	NM_020197	KMT	Lysine (K)-specific methyltransferases	487
+20986	SMYD1	SET and MYND domain containing 1	Approved		BOP, ZMYND22, KMT3D	2p11.1	AF086123	XM_097915	KMT	Lysine (K)-specific methyltransferases	487
+15513	SMYD3	SET and MYND domain containing 3	Approved	ZNFN3A1, ZMYND1	KMT3E	1q44	AK023594	NM_022743	KMT	Lysine (K)-specific methyltransferases	487
+24948	DOT1L	DOT1-like histone H3K79 methyltransferase	Approved		KIAA1814, DOT1, KMT4	19p13.3	AF509504	NM_032482	KMT	Lysine (K)-specific methyltransferases	487
+29489	SETD8	SET domain containing (lysine methyltransferase) 8	Approved		SET8, SET07, PR-Set7, KMT5A	12q24.31	AY102937	NM_020382	KMT	Lysine (K)-specific methyltransferases	487
+24283	SUV420H1	suppressor of variegation 4-20 homolog 1 (Drosophila)	Approved		CGI-85, KMT5B	11q13.2	AL512763	NM_017635	KMT	Lysine (K)-specific methyltransferases	487
+28405	SUV420H2	suppressor of variegation 4-20 homolog 2 (Drosophila)	Approved		MGC2705, KMT5C	19q13.42	BC005842	NM_032701	KMT	Lysine (K)-specific methyltransferases	487
+3527	EZH2	enhancer of zeste 2 polycomb repressive complex 2 subunit	Approved		EZH1, ENX-1, KMT6, KMT6A	7q35-q36		NM_004456	KMT	Lysine (K)-specific methyltransferases	487
+3526	EZH1	enhancer of zeste 1 polycomb repressive complex 2 subunit	Approved		KIAA0388, KMT6B	17q21.1-q21.3		NM_001991	KMT	Lysine (K)-specific methyltransferases	487
+30412	SETD7	SET domain containing (lysine methyltransferase) 7	Approved		KIAA1717, SET7, SET7/9, Set9, KMT7	4q31.1	AB051504	NM_030648	KMT	Lysine (K)-specific methyltransferases	487
+9347	PRDM2	PR domain containing 2, with ZNF domain	Approved		RIZ, RIZ1, RIZ2, KMT8, MTB-ZF, HUMHOXY1	1p36	U17838	NM_012231	KMT	Lysine (K)-specific methyltransferases	487
