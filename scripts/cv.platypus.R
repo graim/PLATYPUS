@@ -47,6 +47,13 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   
   #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
   #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
+
+  ## Set debug flag on/off for testing
+  #flag.debug <- TRUE
+  flag.debug <- FALSE
+  if(flag.debug) { print('Debug is on');flush.console() }
+
+
   require(foreach)
   require(methods)
   
@@ -58,17 +65,22 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   }
   
   ## Load the label data
+  if(flag.debug) { print('Loading labels') }
   labs <- load.label.data(fn.labs,classcol.labs)
+#  print(apply(labs, 2, table));flush.console()
   
   # Get the the two labels
   unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
 
   ## Sort the labels in k subsets
+  # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold - possibly make it so that samples are divided into folds randomly based on amt data available for them
   if(is.numeric(cv.folds)){
+    print(paste('Number of cv folds provided:',cv.folds));flush.console()
     fold.vec <- c(rep(1:cv.folds, each=floor(dim(labs)[[1]]/cv.folds)),sample(1:cv.folds, dim(labs)[[1]]-cv.folds*(floor(dim(labs)[[1]]/cv.folds)), replace=FALSE))
     fold.vec <- sample(fold.vec)
     labs$fold <- fold.vec
-  } else if(is.vector(cv.folds) & length(cv.folds)==nrow(labs)) {
+  } else if(is.vector(cv.folds) & length(cv.folds)==nrow(labs)) { 
+    print('Using provided cv fold assignments');flush.console()
     labs$fold <- cv.folds
   } else {
     print('ERROR: cv.folds must be a vector or integer')
@@ -83,27 +95,38 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     print( paste('Processing fold:',k) ) 
 
     ## Define reduced label file
-    # mark labels of the hold out data set with 'testing', so that they can also be excluded from the unlabelled data in the platypus.R 
+    # mark laeels of the hold out data set with 'testing', so that they can also be excluded from the unlabelled data in the platypus.R 
     labs.reduced <- labs
     labs.reduced[which(labs$fold == k),classcol.labs] <- 'testing'
     fn.labels.reduced <- tempfile()
     write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
-    
+#    print(apply(labs.reduced,2,table));flush.console() 
+#    print(dim(labs));flush.console()
+#    print(dim(labs.reduced));flush.console()
+    if(flag.debug) { print(table(labs.reduced));flush.console() }
+ 
     # get platypus result list
-    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating)
-    
+    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
+ 
+    # TODO: THIS NEXT CODE BLOCK IS THE BROKEN BIT
+    # Error in na.fail.default(list(labels = c(`11031.p1` = 1L, `11033.p1` = 2L,  : 
+    #   missing values in object
     ## Predict hold-out data subset with platypus result
     test.ids <- rownames(labs[which(labs$fold == k & labs[,classcol.labs] != ignore.label),,drop=F])
     if(weighting){
-      predictions <- platypus.predict(platypus.result$final.views, platypus.result$weighting.threshold, test.ids,weighting,unique.labels)
+      predictions <- platypus.predict(platypus.result$final.views, platypus.result$weighting.threshold, test.ids,weighting,unique.labels,labs[,classcol.labs,drop=FALSE]) # TODO: updated to include labs
     } else {
-      predictions <- platypus.predict(platypus.result$final.views, platypus.result$majority.threshold, test.ids,weighting,unique.labels)
+      predictions <- platypus.predict(platypus.result$final.views, platypus.result$majority.threshold, test.ids,weighting,unique.labels,labs[,classcol.labs,drop=FALSE]) # TODO: updated to include labs
     }
+    if(flag.debug) { print('Held out data subset predictions made successfully');flush.console() }
+    if(flag.debug) { print(head(predictions));flush.console() }
     
     
     ## Calculate final platypus performance for each cv-fold
     perf.all.agree <- calculate.performance(predictions[,c("final","category.all")],labs[,classcol.labs,drop=F],unique.labels)   
+    if(flag.debug) { print('Calculated all.agree');flush.console() }
     perf.majority.agree <- calculate.performance(predictions[,c("final","category.majority")],labs[,classcol.labs,drop=F],unique.labels)
+    if(flag.debug) { print('Calculated majority.agree');flush.console() }
     
     ## Calculate final performance values for each view
     perf.views <- list()
@@ -132,13 +155,14 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
         test.ids <- rownames(labs[which(labs$fold == k & labs[,classcol.labs] != ignore.label),,drop=F])
         
         if(weighting){
-          predictions <- platypus.predict(view.list, platypus.result$weighting.threshold, test.ids, weighting,unique.labels)
+          predictions <- platypus.predict(view.list, platypus.result$weighting.threshold, test.ids, weighting,unique.labels,labs[,classcol.labs,drop=FALSE]) # TODO: updated to include labs)
         } else {
-          predictions <- platypus.predict(view.list, platypus.result$majority.threshold, test.ids, weighting,unique.labels)
+          predictions <- platypus.predict(view.list, platypus.result$majority.threshold, test.ids, weighting,unique.labels,labs[,classcol.labs,drop=FALSE]) # TODO: updated to include labs)
         }
         
         
         ## Calculate performance of the iteration platypus and views
+        if(flag.debug) { print('Caluculating iteration performances');flush.console() }
         perf.all.agree <- calculate.performance(predictions[,c("final","category.all")],labs[,classcol.labs,drop=F],unique.labels)   
         perf.majority.agree <- calculate.performance(predictions[,c("final","category.majority")],labs[,classcol.labs,drop=F],unique.labels) # TODO: fails here if weighting=FALSE
         
@@ -185,19 +209,21 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
         
         performance.iterations[[i]] <- list(perf.all.agree=perf.all.agree,perf.majority.agree=perf.majority.agree,perf.views=perf.views) 
       }
-    }
+    } # end if expanded.output
     return.list <- list(accuracy.cvfolds=accuracy.cvfolds,performance.cvfolds=performance.cvfolds)
     if(expanded.output){
       return.list <- list(accuracy.cvfolds=accuracy.cvfolds,performance.cvfolds=performance.cvfolds,accuracy.platypus.iterations=accuracy.platypus.iterations,performance.iterations=performance.iterations
                           ,labelling.matrix=platypus.result$labelling.matrix,labelling.matrices.views=platypus.result$labelling.matrices.views)
-    }
+    } 
+    if(flag.debug) { print('leaving do.one.cvfold');flush.console() }
     return(return.list)
-  } # end fxn
+  } # end do.one.cvfold fxn
 
 
   
   if (parallel) {
     print("working parallel")
+    #print(cv.folds)
     cv.result.list <- foreach(k=1:cv.folds, .export=c("platypus", "drop.features" ,"ElasticNet" ,"RandomForest" ,"setAlpha" ,"setMeasure" ,"setMtry"
       ,"setNtree" ,"setDrop" ,"setDropTo" ,"setAcc" ,"setAccNorm" ,"load.parameterfile" ,"load.data" ,"load.data.ElasticNet" ,"load.data.RandomForest"
       ,"load.label.data" ,"get.unique.labels" ,"addX" ,"view.train" ,"view.train.ElasticNet" ,"view.train.RandomForest" ,"view.predict" ,"view.predict.ElasticNet"
@@ -208,8 +234,11 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       , .packages=c("glmnet","randomForest")) %dopar% do.one.cvfold(k = k)
   } else {
     print("working non-parallel")
+    #print(cv.folds)
     cv.result.list <- foreach(k=1:cv.folds) %do% do.one.cvfold(k = k)
   }
+
+  if(flag.debug) { print('out of cv folds loop');flush.console() }
 
   ## Collect accuracy over cv-iterations
   accuracy.cvfolds <- c()
@@ -259,6 +288,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       write.table(accuracy.platypus.iterations, file= paste0(output.folder,"/perf_platypus_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
       save(performance.iterations,file =paste0(output.folder,"performance.iterations.Rdata") )
     }
+    else { if(flag.debug) { print(class(output.folder)) } } # TODO: is this statement truly debug-only?
     
     labelling.matrix.cvlist <- list()
     labelling.matrices.views.cvlist <- list()

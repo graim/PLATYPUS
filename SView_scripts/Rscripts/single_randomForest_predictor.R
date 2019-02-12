@@ -2,23 +2,10 @@
 # generalized function to take in feature by sample expression matrix and predict drug sensitivity
 # requires to R packages: "randomForest" and "foreach"
 ###################################################################################################
-single.randomForest.predictor <- function(
-  sample.feature.matrix,
-  drug.response,
-  mtry = seq(
-    round(sqrt(ncol(sample.feature.matrix))) - round(0.05*ncol(sample.feature.matrix)),
-    round(sqrt(ncol(sample.feature.matrix))) + round(0.05*ncol(sample.feature.matrix)),
-    by = 1
-    ),
-  ntree = c(500,1000,1500,2000),
-  best.parameters = NULL,
-  output.value = 'best',
-  parallel = FALSE,
-  num.cores = 20
-  ) {
+single.randomForest.predictor <- function(sample.feature.matrix, drug.response, mtry = seq( round(sqrt(ncol(sample.feature.matrix))) - round(0.05*ncol(sample.feature.matrix)), round(sqrt(ncol(sample.feature.matrix))) + round(0.05*ncol(sample.feature.matrix)), by = 1 ), ntree = c(500,1000,1500,2000), best.parameters = NULL, output.value = 'best', is.parallel = FALSE, num.cores = 20) {
 
-  # set parallel background if parallel is set to true
-  if (parallel) {
+  # set is.parallel background if is.parallel is set to true
+  if (is.parallel) {
     cl <- makeCluster(num.cores);
     registerDoParallel(cl, cores = num.cores);
   }
@@ -38,10 +25,17 @@ single.randomForest.predictor <- function(
       );
 
     # find tp, fp, tn and fn of training data only
-    tmp.evaluation[1,'true.positives']   <- sum(predicted[,1] == 'sensitive' & response[,1] == 'sensitive');
-    tmp.evaluation[1,'false.positives'] <- sum(predicted[,1] == 'sensitive' & response[,1] == 'non-sensitive');
-    tmp.evaluation[1,'true.negatives']   <- sum(predicted[,1] == 'non-sensitive' & response[,1] == 'non-sensitive');
-    tmp.evaluation[1,'false.negatives'] <- sum(predicted[,1] == 'non-sensitive' & response[,1] == 'sensitive');
+    #print(table(predicted))
+    labs.ids <- levels(predicted[,1])
+    tmp.evaluation[1,'true.positives']   <- sum(predicted[,1] == labs.ids[[1]] & response[,1] == labs.ids[[1]]);
+    tmp.evaluation[1,'false.positives']  <- sum(predicted[,1] == labs.ids[[1]] & response[,1] == labs.ids[[2]]);
+    tmp.evaluation[1,'true.negatives']   <- sum(predicted[,1] == labs.ids[[2]] & response[,1] == labs.ids[[2]]);
+    tmp.evaluation[1,'false.negatives']  <- sum(predicted[,1] == labs.ids[[2]] & response[,1] == labs.ids[[1]]);
+
+    #tmp.evaluation[1,'true.positives']   <- sum(predicted[,1] == 'ASD' & response[,1] == 'ASD');
+    #tmp.evaluation[1,'false.positives'] <- sum(predicted[,1] == 'ASD' & response[,1] == 'HEALTHY');
+    #tmp.evaluation[1,'true.negatives']   <- sum(predicted[,1] == 'HEALTHY' & response[,1] == 'HEALTHY');
+    #tmp.evaluation[1,'false.negatives'] <- sum(predicted[,1] == 'HEALTHY' & response[,1] == 'ASD');
 
     # find sensitivity, specificity and balanced accuracy of training data only 
     tmp.evaluation[1,'sensitivity']     <- tmp.evaluation[1,'true.positives']/(tmp.evaluation[1,'true.positives'] + tmp.evaluation[1,'false.negatives']);
@@ -49,7 +43,7 @@ single.randomForest.predictor <- function(
     tmp.evaluation[1,'balanced.accuracy']   <- (tmp.evaluation[1,'sensitivity'] + tmp.evaluation[1,'specificity'])/2;
 
     return(tmp.evaluation)
-    }
+    } # end calculate.scores
 
   # check that sample feature matrix is not mising any values
   if (any(is.na(sample.feature.matrix))) {
@@ -67,8 +61,9 @@ single.randomForest.predictor <- function(
   # predict drug sensitivity in each cell line based on single group of features
   randomForest.results <- list();
   for (compound in colnames(drug.response)) {
+    print(paste('Testing outcome label:',compound));flush.console()
 
-    # keep only cells that have sensitive or non-sensitive response
+    # keep only cells that have sensitive or HEALTHY response
     compound.drug.response       <- drug.response[!is.na(drug.response[,compound]),];
     compound.sample.feature.matrix   <- sample.feature.matrix[!is.na(drug.response[,compound]),];
 
@@ -96,16 +91,10 @@ single.randomForest.predictor <- function(
     }
 
     # create vector of names of parameters testing
-    parameter.names <- apply(
-      parameters.to.test,
-      1,
-      function(x) {
-        paste("mtry",x[1],"ntree",x[2],sep = ".")
-        }
-      );
+    parameter.names <- apply(parameters.to.test,1,function(x) {paste("mtry",x[1],"ntree",x[2],sep = ".")});
 
-    if (parallel) {
-      # test all combinations of parameters running each randomForest in parallel if parallel argument set as true
+    if (is.parallel) {
+      # test all combinations of parameters running each randomForest in parallel if is.parallel argument set as true
       randomForest.model <- foreach(mtry.test = parameters.to.test[,1], ntree.test = parameters.to.test[,2], .packages = 'randomForest') %dopar%
         randomForest(
           x = compound.sample.feature.matrix,
@@ -115,7 +104,7 @@ single.randomForest.predictor <- function(
           importance = TRUE
           );
         } else {
-          # if parallelize argument not set as true 
+          # if is.parallelize argument not set as true 
           randomForest.model <- foreach(mtry.test = parameters.to.test[,1], ntree.test = parameters.to.test[,2], .packages = 'randomForest') %do%
             randomForest(
               x = compound.sample.feature.matrix,
@@ -167,7 +156,7 @@ single.randomForest.predictor <- function(
           )
         );
       # find min oob.err
-      min.oob.err <- min(oob.err);
+      min.oob.err <- min(oob.err, na.rm=TRUE); # KILEY EDITED 20180131
       # find parameter name associated with min oob.err
       tmp.par.name <- substr(
         names(oob.err)[oob.err == min.oob.err],
@@ -178,7 +167,7 @@ single.randomForest.predictor <- function(
       if (length(tmp.par.name) > 1) {
         tmp.par.name <- tmp.par.name[1];
         }
-      #print("Finished another ...");
+      print("Finished another ..."); # TODO
       # find sensitivity, specificity and balanced accuracy of best parameters
       evaluation.best.parameters <- compound.results$parameter.evaluation[tmp.par.name];
       # split str ra

@@ -54,11 +54,19 @@
 # main function
 ###################
 llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
-  
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
+
+  
+  ## Set debug flag on/off for testing - currently we don't use this
+  #flag.debug <- TRUE
+  flag.debug <- FALSE
+  if(flag.debug) { print('Debug is on');flush.console() }
+
   require(foreach)
   require(methods)
+  print(paste('Ignoring:',ignore.label))
+
   
   if(parallel) {
     require(doParallel)
@@ -78,6 +86,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
   ## Sort the labels in k subsets
   # Randomly create fold number for each label (balance folds to equal size)    TODO: shall we balance folds for equal class instances (based on the overall occurrence of each class in the data set)?
   # TODO: give the option to give user-defined folds as input
+  # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold - possibly make it so that samples are divided into folds randomly based on amt data available for them
   fold.vec <- c(rep(1:llv.folds, each=floor(dim(labs)[[1]]/llv.folds)),sample(1:llv.folds, dim(labs)[[1]]-llv.folds*(floor(dim(labs)[[1]]/llv.folds)), replace=FALSE))
   fold.vec <- sample(fold.vec)
   labs$fold <- fold.vec
@@ -97,7 +106,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
     write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
     
     # get platypus result list
-    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating)
+    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
     
     ## Calculate final ll-performance
     # get rid of unused iterations
@@ -208,8 +217,8 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
       labelling.matrices.views.llvlist[[k]] <- llv.result.list[[k]]$labelling.matrices.views
     }
     
-    save(labelling.matrix.llvlist,file =paste0(output.folder,"labelling.matrix.llvlist.Rdata") )
-    save(labelling.matrices.views.llvlist,file =paste0(output.folder,"labelling.matrices.views.llvlist.Rdata") )
+    save(labelling.matrix.llvlist,file =paste0(output.folder,"/labelling.matrix.llvlist.Rdata") )
+    save(labelling.matrices.views.llvlist,file =paste0(output.folder,"/labelling.matrices.views.llvlist.Rdata") )
   }
 
   # TODO: this should return an LLV object

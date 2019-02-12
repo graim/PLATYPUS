@@ -64,6 +64,24 @@ RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",nt
   return(me)
 }
 
+## TODO: I created this but didn't actually update it or change content from RandomForest object
+SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=c(),acc=0.5,accSD=0) {
+  me <- list(
+    param.file = param.file,
+    data.matrix = data.matrix,
+    data.fn = data.fn,
+    type = type,
+    C = C,
+    model = model,
+    acc = acc,
+    accSD = accSD
+  )
+
+  ## Set the name for the class
+  class(me) <- append(class(me),"SupportVectorMachine")
+  return(me)
+}
+
 ## Set methods for the view objects
 setAlpha <- function(view.object, newValue){
   view.object$alpha <- newValue
@@ -106,6 +124,8 @@ setAccNorm <- function(view.object, newValue){
 }
 
 ## Read in the parameter file for a view and return a view object
+## TODO: Add in option for view name
+## TODO: add in SVM models
 load.parameterfile <- function(filename){
   
   param.table <- read.table(filename, sep='\t',header=F, row.names=1)
@@ -131,7 +151,7 @@ load.parameterfile <- function(filename){
       view.object <- setAcc(view.object,as.numeric(as.character(param.table["acc",1])))
     }
     return(view.object)
-  }
+  } # end type EN
   if(type == 'rf'){
     view.object <- RandomForest(param.file=filename,data.fn=toString(param.table["data.fn",1]))
     if("mtry" %in% rownames(param.table)){
@@ -151,9 +171,14 @@ load.parameterfile <- function(filename){
     }
     
     return(view.object)
+  } # end type RF
+  if(type == 'svm'){
+    ## TODO: implement svm types :)
   }
+
   # if nothing was returned so far, send error message
-  stop(paste0("Could not find type specified 'en' or 'rf' in parameter file ",filename))
+  #stop(paste0("Could not find type specified 'en' or 'rf' in parameter file ",filename))
+  stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
 }
 
 
@@ -173,9 +198,6 @@ load.data.ElasticNet <- function(view.object){
     mat <- drop.features(mat, view.object$drop.to)
   }
   
-  # add an 'X' to all rownames starting with a number (To stay consistent, bc R adds 'X' to matrix columns starting with a number)
-  #rownames(mat) <- addX(rownames(mat))
-  
   # set the matrix
   view.object$data.matrix <- mat
   
@@ -192,9 +214,6 @@ load.data.RandomForest <- function(view.object){
     mat <- drop.features(mat, view.object$drop.to)
   }
   
-  # add an 'X' to all rownames starting with a number (To stay consistent, bc R adds 'X' to matrix columns starting with a number)
-  rownames(mat) <- addX(rownames(mat))
-  
   # set the matrix
   view.object$data.matrix <- mat
   
@@ -204,20 +223,37 @@ load.data.RandomForest <- function(view.object){
   }
   return(view.object)
 }
+load.data.SupportVectorMachine <- function(view.object){
+  # read the matrix from the file
+  mat <- data.matrix( read.table(view.object$data.fn, sep='\t',header=T, row.names=1, check.names=F) )
+  print(paste('data loaded for SVM view',view.object$data.fn))
+  ## TODO: It's not always tab-delimited!!!
+
+  # drop features
+  if(view.object$drop){
+    mat <- drop.features(mat, view.object$drop.to)
+  }
+
+  # set the matrix
+  view.object$data.matrix <- mat
+
+  return(view.object)
+}
 
 ## load the label file
 load.label.data <- function(fn.labs,classcol.labs){
   # read file
-  labs <- read.table(fn.labs, sep='\t',header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE)
+  labs <- read.table(fn.labs, sep='\t',header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
+  # TODO: not always tab-delimited!
   # take out 'NA' values
   labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=F]
-  # add X to rows starting with number
-#  rownames(labs) <- addX(rownames(labs))
   
   return(labs)
 }
 ## retrieve the two labels for training/predicting
 get.unique.labels <- function(label.vec,ignore.label){
+
+  print(paste('ignoring',ignore.label));flush.console()
   ## Get the the two labels
   unique.labels <- unique(label.vec)
   
@@ -231,6 +267,7 @@ get.unique.labels <- function(label.vec,ignore.label){
   }
 
   unique.labels <- as.vector(sort(unique.labels))
+  print(unique.labels);flush.console()
   
   # MVL classification for 2 labels
   if(length(unique.labels) != 2){
@@ -241,6 +278,7 @@ get.unique.labels <- function(label.vec,ignore.label){
 
 ## find strings starting with a number and add an 'X' in the front
 # this is done to ensure consistence over all rownames and colnames for R matrices (R adds 'X' to colnames starting with a number)
+## TODO: finish removing this from the package
 addX <- function(vector){
   vector[grep("^[0-9].",vector)] <- paste0("X",vector[grep("^[0-9].",vector)])
   return(vector)
@@ -256,7 +294,7 @@ view.train.ElasticNet <- function(labels, view.object ){
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-#  print( summary( labels[ids,1] ) ) # TODO
+  #print( summary( labels[ids,1] ) ) # TODO
   
   # Train model
   require(glmnet)
@@ -265,6 +303,7 @@ view.train.ElasticNet <- function(labels, view.object ){
                                   as.factor(labels[ids,1]), family=view.object$family, 
                                   type.measure=view.object$measure, 
                                   alpha=view.object$alpha 
+                                  ,nfolds=5 # TODO, shouldn't be hard coded
                                   , keep=T)  #defaults to nfold=10
   return(view.object)
 }
@@ -283,6 +322,23 @@ view.train.RandomForest <- function( labels, view.object  ){
                                      ntree=view.object$ntree )
   return(view.object)
 }
+view.train.SupportVectorMachine <- function( labels, view.object  ){
+  ## TODO: UNTESTED
+  # Intersect IDs in labels and in the feature data
+  ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
+
+#  print( summary( labels[ids,1] ) ) # TODO
+
+  # Train model
+  require(e1071)
+  view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
+                                       kernel=view.object$kernel,  
+                                       cost=view.object$cost, 
+                                       gamma=view.object$gamma)
+
+  return(view.object)
+}
+
 
 
 ## Take a trained view and new labels, return predictions
@@ -309,24 +365,146 @@ view.predict.RandomForest <- function(ids.unlabelled, view.object) {
   
   return(as.character(c()))
 }
+view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
+  ## TODO: UNTESTED
+  # Intersect IDs in labels and in the feature data
+  ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
+  if(length(ids) > 0){
+    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=F])  ) )
+  }
+
+  return(as.character(c()))
+}
 
 
+
+## 20180709 - Kiley updates to add in stacked learning
 ## Take a platypus result and predict new labels with it
-platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels){
+#platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
+platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
 
-  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",1:length(view.list))))
+  ## Debug flag can be manually activated, for testing purposes 
+  #flag.debug <- TRUE
+  flag.debug <- FALSE 
+  if(flag.debug) { print('Debug is on');flush.console() }
+
+  ## Return values:
+  #  Test.ids is the list of sample IDs we are testing.
+  #  predictions is the data frame of samples (rows) by views label predictions (eg. sensitive/non-sensitive)
+  #  final is a list of outcome label predictions - NOTE: some of these have NA values! Names are sample IDs
+  #  category.all is a list of agreed/not.agreed labels. Names are sample IDs
+  #  category.majority is also a list of agreed/not.agreed labels. Names are sample IDs
+  
+  if(flag.debug) { print('platypus.predict');flush.console() }
+  #  predictions is the data frame of samples (rows) by views label predictions (eg. sensitive/non-sensitive)
+  ## Make per-view predictions
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",1:length(view.list)))) # TODO: Update 'view.' to be view names
+  for(view.i in 1:length(view.list)){
+    ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
+    if(length(ids) > 0){
+      predictions[ids,view.i] <- view.predict(ids,view.list[[view.i]])
+    }
+  } 
+  predictions[is.na(predictions)] <- 'not.predicted' # TEMP removing NA values so model predictions work
+  if(flag.debug) { print('Created predictions matrix');flush.console() }
+
+  # samples fall in 3 categories if view predictions are combined in an ensemble
+  # agreed: there was enough agreement between the single views to make an ensemble prediction
+  # not.agreed: not enough agreement between the single views to make an ensemble prediction
+  # not.assessed: not enough data was available in the single views to ever reach an ensemble prediction under the given requirements
+
+  # category.all is a list of agreed/not.agreed labels. Names are sample IDs
+  category.all <- rep(NA,length(test.ids))#dim(predictions)[[1]])
+  names(category.all) <- test.ids # rownames(predictions)
+  category.all[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x))>=length(view.list))),,drop=FALSE])] <- "not.agreed"
+  category.all[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x))<length(view.list))),,drop=FALSE])] <- "not.assessed"
+  category.all[rownames(predictions[which(apply(predictions,1,function(x) table(x)[1]==length(view.list))),,drop=FALSE])] <- "agreed"
+  category.majority <- category.all # TODO: TEMP. This used to be different and part of weighting, not sure going to use in stacked version 
+  if(flag.debug) { print('Created category.all and category.majority');flush.console() }
+
+  ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
+  require(randomForest) 
+  #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model
+  for.model.predictions <- cbind(labels=labels[rownames(predictions),1], predictions) # Combine labels and predictions from each view to train the stacked model
+  #print(paste('Class for.model.predictions',class(for.model.predictions)));flush.console()
+  if(flag.debug) { print(unique(for.model.predictions[,1]));flush.console() } # Print the unique labels 
+  preds.model       <- randomForest( labels ~ ., for.model.predictions, ntree=100,replace=TRUE)
+  if(flag.debug) { print('Make stacked model predictions');flush.console() }
+  preds.stckd       <- predict(preds.model, predictions, predict.all=TRUE)
+  if(flag.debug) { print('Make preds.stckd');flush.console() }
+  preds.stacked.all <- preds.stckd$individual
+  if(flag.debug) { print('Make preds.stckd.indiv');flush.console() }
+
+  if(flag.debug) { print('Stacked model predictions made');flush.console() }
+  tbl.preds.stckd           <- matrix(NA, nrow=nrow(preds.stacked.all), ncol=2)
+  rownames(tbl.preds.stckd) <- rownames(preds.stacked.all)
+  colnames(tbl.preds.stckd) <- unique.labels
+  tbl.preds.stckd[,1]       <-   apply(preds.stacked.all, 1, function(x) {sum(x==unique.labels[1])} ) 
+  tbl.preds.stckd[,2]       <-   apply(preds.stacked.all, 1, function(x) {sum(x==unique.labels[2])} ) 
+  tbl.preds.stckd           <- tbl.preds.stckd/ncol(preds.stacked.all)
+ 
+  #category.majority <- predict(preds.model, predictions, predict.all=TRUE)$aggregate #preds.lbls #majority.res.list$category.majority #TODO: updated the typo, not tested yet 
+  #category.majority <- preds.stckd$aggregate #preds.lbls #majority.res.list$category.majority #TODO: updated the typo, not tested yet 
+
+  if(flag.debug) { print('Created tbl.preds.stckd');flush.console() }
+  #  final is a list of outcome label predictions - NOTE: some of these have NA values! Names are sample IDs
+  final <- rep(NA, length(test.ids))
+  names(final) <- test.ids
+  final[rownames(preds.stckd)] <- preds.stckd$aggregate # tbl.preds.stckd[apply(tbl.preds.stckd,1,max)>=majority,]
+  if(flag.debug) { print('created final');flush.console() }
+
+  # Reset the NA values from before
+  predictions[predictions=='not.predicted'] <- NA # Put these back to NA values
+  if(flag.debug) { 
+    print(unique(predictions));flush.console()
+    print('Re-Updated predictions matrix');flush.console()
+  }
+
+  ## Debug only
+  if(flag.debug) { 
+    print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
+    print(length(test.ids));flush.console()
+    print(dim(predictions));flush.console()
+    print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
+    print(length(category.all));flush.console()
+    print(length(category.majority));flush.console()
+
+    print('TEST.IDS:');flush.console()
+    print(head(test.ids));flush.console()
+    print('PREDICTIONS:');flush.console()
+    print(head(predictions));flush.console()
+    print('FINAL:');flush.console()
+    print(head(final));flush.console()
+    print('CATEGORY.ALL:');flush.console()
+    print(head(category.all));flush.console()
+    print('CATEGORY.MAJORITY:');flush.console()
+    print(head(category.majority));flush.console()
+  }
+
+  predictions <- cbind(predictions,final,category.all,category.majority)
+
+  if(flag.debug) { print('leaving platypus.predict');flush.console() }
+  return(predictions)
+
+}
+
+## Old platypus predict function - uses ensemble
+platypus.predict.ensemble <- function(view.list, majority, test.ids,weighting,unique.labels){
+#platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels=NA){
+
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",1:length(view.list)))) # TODO: Update 'view.' to be view names
   for(view.i in 1:length(view.list)){
     ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
     if(length(ids) > 0){
       predictions[ids,view.i] <- view.predict(ids,view.list[[view.i]]) 
     }
   }
-  
+
   # samples fall in 3 categories if view predictions are combined in an ensemble
   # agreed: there was enough agreement between the single views to make an ensemble prediction
   # not.agreed: not enough agreement between the single views to make an ensemble prediction
   # not.assessed: not enough data was available in the single views to ever reach an ensemble prediction under the given requirements
-  
+
   category.all <- rep(NA,dim(predictions)[[1]])
   names(category.all) <- rownames(predictions)
   category.all[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x))>=length(view.list))),,drop=FALSE])] <- "not.agreed"
@@ -339,13 +517,32 @@ platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labe
     final <- majority.res.list$final
   } else {
     majority.res.list <- get.majority.counting(majority,predictions)
-    category.majority <- majority.res.list$categroy.majority
+    category.majority <- majority.res.list$category.majority
     final <- majority.res.list$final
   }
 
+  ## Debug only
+  print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
+  print(length(test.ids));flush.console()
+  print(dim(predictions));flush.console()
+  print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
+  print(length(category.all));flush.console()
+  print(length(category.majority));flush.console()
+
+  print('TEST.IDS:');flush.console()
+  print(head(test.ids));flush.console()
+  print('PREDICTIONS:');flush.console()
+  print(head(predictions));flush.console()
+  print('FINAL:');flush.console()
+  print(head(final));flush.console()
+  print('CATEGORY.ALL:');flush.console()
+  print(head(category.all));flush.console()
+  print('CATEGORY.MAJORITY:');flush.console()
+  print(head(category.majority));flush.console()
+
   predictions <- cbind(predictions,final,category.all,category.majority)
   return(predictions)
-  
+
 }
 
 ## Adjusting view accuracy in each platypus iteration to ensure correct weighting
@@ -368,8 +565,8 @@ update.accuracy <- function(view, known.labels){
 ## assessment of prediction accuracy of the view is therefore highly overestimated
 update.accuracy.ElasticNet <- function(view, known.labels){
   
-  preditions <- view.predict(rownames(known.labels),view)
-  label.tab <- merge(known.labels, as.data.frame(preditions), by.x="row.names", by.y="row.names", all=T, sort=T) 
+  predictions <- view.predict(rownames(known.labels),view)
+  label.tab <- merge(known.labels, as.data.frame(predictions), by.x="row.names", by.y="row.names", all=T, sort=T) 
   
   acc.list <- calculate.accuracy(label.tab,known.labels)
   view <- setAcc(view,acc.list$b.acc)
@@ -388,6 +585,8 @@ update.accuracy.RandomForest <- function(view, known.labels){
   
   return(view)
 }
+## TODO: update.accuracy.svm function needs creation
+
 calculate.accuracy <- function(label.tab,known.labels){
   correct <- c()
   total <- c()
@@ -404,6 +603,7 @@ calculate.accuracy <- function(label.tab,known.labels){
 }
 
 ## get ensemble predictions for a majority setup - counting votes
+# TODO: Update this to work with a stacked model version
 get.majority.counting <- function(majority,predictions){
   category.majority <- rep(NA,dim(predictions)[[1]])
   names(category.majority) <- rownames(predictions)
@@ -417,7 +617,23 @@ get.majority.counting <- function(majority,predictions){
   
   return(list(category.majority=category.majority,final=final))
 }
+## Ensemble version of this fxn
+get.majority.counting.ensemble <- function(majority,predictions){
+  category.majority <- rep(NA,dim(predictions)[[1]])
+  names(category.majority) <- rownames(predictions)
+  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) >= majority)),,drop=FALSE])] <- "not.agreed"
+  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) < majority)),,drop=FALSE])] <- "not.assessed"
+  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sort(table(x),decreasing=T)[1] >= majority)),,drop=FALSE])] <- "agreed"
+
+  final <- rep(NA,dim(predictions)[[1]])
+  names(final) <- rownames(predictions)
+  final[names(category.majority[which(category.majority == "agreed")])] <- apply(predictions[names(category.majority[which(category.majority == "agreed")]),],1,function(x) names(sort(table(x),decreasing=T))[1])
+
+  return(list(category.majority=category.majority,final=final))
+}
+
 ## get ensemble predictions for a majority setup - weighting votes by accuracy
+# TODO: Update this to work with a stacked model version
 get.majority.weighting <- function(view.list,majority,predictions,unique.labels){
   
   category.majority <- rep(NA,dim(predictions)[[1]])
@@ -461,6 +677,7 @@ get.majority.weighting <- function(view.list,majority,predictions,unique.labels)
 
 ## take single predictions for unlabeled samples and return all where view agreement meets requirements
 # count number of views agreeing in a predictions, check if thresholds are met
+# TODO: Update this to work with a stacked model version
 get.new.labels.majorityCount <- function(predictions,majority,majority.missingData){
   
   new.labelled <- c()
@@ -480,6 +697,7 @@ get.new.labels.majorityCount <- function(predictions,majority,majority.missingDa
 }
 
 # weigh the predictions by accuracy of the single views
+# TODO: Update this to work with a stacked model version
 get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels){
 
   # get normalized accuracies of the views
@@ -531,6 +749,7 @@ normalize.accuracies <- function(view.list){
 
 # normalize to range [0,1]
 normalize.accuracy.linear <- function(acc){
+  # TODO: Allow for <0.5 models, just adjust to be 0.5
   if(acc >= 0.5 & acc <= 1){
     acc.norm <- (acc - 0.5) / (1-0.5)
   } else{
@@ -540,7 +759,15 @@ normalize.accuracy.linear <- function(acc){
 }
 # normalize to range [0,1] and log-transform
 normalize.accuracy.log <- function(acc){
-  if(acc >= 0.5 & acc <= 1){
+  print(acc)
+  #if(acc >= 0.5 & acc <= 1){ # TODO: Temp fix
+  if(is.na(acc)) {
+    stop(paste0("Non-numeric accuracy value")) #TODO: TEMP
+  }
+  if(acc >= 0 & acc <= 1){
+    if(acc <= 0.5) { 
+      acc <- 0.51 # Don't want negative values
+    }
     if(acc == 1){
       acc <- 0.99  ## avoids to get Inf-values
     }

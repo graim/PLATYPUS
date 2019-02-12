@@ -7,12 +7,12 @@ single.svm.predictor <- function(
   cost = c(0.1,1,10,100),
   output.value = 'best',
   best.parameters = NULL,
-  parallel = FALSE,
+  is.parallel = FALSE,
   num.cores = 20
   ) {
 
   # set parallel background if parallel is set to true
-  if (parallel) {
+  if (is.parallel) {
     cl <- makeCluster(num.cores);
     registerDoParallel(cl, cores = num.cores);
   }

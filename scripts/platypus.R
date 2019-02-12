@@ -5,7 +5,8 @@
 ##    Updated: March 2016, Kiley Graim
 ##    Updated: June 2016, Kiley Graim
 ##    Updated: Feb 2017, Kiley Graim
-##    Last Updated: Jan 2018, Kiley Graim
+##    Updated: Jan 2018, Kiley Graim
+##    Last Updated: Aug 2018, Kiley Graim
 
 # pseudo-code:
 #     for (v in views)
@@ -43,8 +44,14 @@
 
 # fn.labs: labels file
 # fn.views: list of parameter files
-platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermediate',i=100, m=100, w=FALSE, u=FALSE, e=FALSE,k=5,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
-  
+#platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermediate',i=100, m=100, w=FALSE, u=FALSE, e=FALSE,k=5,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
+platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,k=5,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
+
+  ## Debug flag can be manually activated, for testing purposes 
+  #flag.debug <- TRUE
+  flag.debug <- FALSE 
+  if(flag.debug) { print('Debug is on');flush.console() }
+
   ## Set more readable names
   majority.threshold.percent<-m
   no.iterations<-i
@@ -55,11 +62,13 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
 
   ## Load the data for labs and each view
   labs <- load.label.data(fn.labs,classcol.labs)
+  if(flag.debug) {print(table(labs[,classcol.labs]));flush.console()}
 
   # Get the the two labels
   unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
-  view.list <- lapply(view.list, load.data) 
-  
+  view.list <- lapply(view.list, load.data)
+  if(flag.debug) { print(lapply(view.list, function(x){length(intersect(labs,rownames(x)))} ));flush.console()  } 
+
   ## Take all IDs for each data type
   all.ids <- unique( unlist(lapply(view.list, function(x) {rownames(x$data.matrix)} )) )
   labs <- labs[rownames(labs) %in% all.ids,,drop=FALSE]  # labs without data in any view can not be used for training and/or prediction
@@ -135,6 +144,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
     }
     
     ## Train each view
+    #print( paste('Labels:', dim(labels) ));flush.console()
     view.list <- lapply(view.list, function(x) { view.train(labels,x) } )
     
     ## Test on the unknown labels
@@ -143,6 +153,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
       ids <- intersect(ids.unlabelled,rownames(view.list[[view.i]]$data.matrix))
       predictions[ids,view.i] <- view.predict(ids.unlabelled,view.list[[view.i]]) 
     }
+    #print( paste('Predictions dimensions',dim(predictions)) );flush.console()
 
 
     ## Add unknown labels to known, where view agreement meets requirements
@@ -155,7 +166,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
           sum.acc <- 0
           for(view.i in 1:length(view.list)){
             sum.acc = sum.acc + view.list[[view.i]]$acc.norm
-            print( view.list[[view.i]]$acc.norm)
+        #    print( view.list[[view.i]]$acc.norm)
           }
           weighting.threshold <- majority.threshold.percent*sum.acc/100
       }
@@ -179,16 +190,18 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
     colnames(new.labelled) <- colnames(labels)
     
     ## Add new labels
+    #print( paste('Dimensions labels matrix', dim(labels) ) );flush.console()
+    #print( paste('Dimensions new.labels matrix', dim(new.labelled) ) );flush.console()
     labels <- rbind(labels,new.labelled)
     new.labels <- rbind(new.labels, new.labelled)
-    print( paste('Number labels added', length(ids.unlabelled)) )
-    print( summary(labels) )
+    if(flag.debug) {print( paste('Number labeled samples', length(ids.labelled)) ) }
+    #print( summary(labels) )
 
     ## TODO: If only 1 class in labels list, quit with a warning
 
     ## Remove newly found labels from unlabelled IDs
     ids.unlabelled <- ids.unlabelled[!(ids.unlabelled %in% rownames(labels))]
-    print( paste('Number unlabeled IDs', length(ids.unlabelled)) )
+    print( paste('Remaining unlabeled IDs:', length(ids.unlabelled)) )
 
 
     ## Collect information about the iterations for expanded output
@@ -235,7 +248,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermed
     
 
     
-  }
+  } # end for no.iterations
 
   ## Collect information for the returned result
   if(weighting){

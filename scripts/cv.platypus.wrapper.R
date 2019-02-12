@@ -48,8 +48,10 @@ cv.platypus <- function(argv) {
  
 #/Users/kgraim/Documents/MVL/PLATYPUS/scripts 
 # TODO: Don't hard code this
-  source(paste0(Sys.getenv("HOME"),'/Documents/MVL/scripts/platypus.R'))
-  source(paste0(Sys.getenv("HOME"),'/Documents/MVL/scripts/platypus.basicFunctions.R'))
+  #source(paste0(Sys.getenv("HOME"),'/Documents/MVL/scripts/platypus.R'))
+  #source(paste0(Sys.getenv("HOME"),'/Documents/MVL/scripts/platypus.basicFunctions.R'))
+  source('platypus.R')
+  source('platypus.basicFunctions.R')
   require(foreach)
   require(methods)
   

@@ -1,0 +1,270 @@
+## Kiley edits 2018 July - converted to fxn that generates plot for 1 result
+
+##################################################################################################
+### Given expanded output from CV and LLV tests, generate a label learning matrix.  
+######################################################################################
+##  Arguments: 
+##    compound = name of the outcome (e.g. Lapatinib)
+##    fn.labs  = filename of the outcome labels
+##    folder   = output directory name 
+################################################################
+
+plot.llv <- function(compound, fn.labs, folder) {
+
+  ## Check arguments
+#  if(!is.character(compound)) { stop(paste("ERROR: compound",compound,'must be a character/string')) }
+#  if(!file.exists((fn.labs)) { stop(paste("ERROR: Labels file does not exist:",fn.labs)) }
+#  if(!file.exists(folder)) { stop(paste("ERROR: Folder does not exist:",folder)) }
+
+  ## Load libraries
+  library(MASS) # TODO: need this or no?
+  library(gplots)
+
+  ## Set filenames
+  classcol.labs <- 1 # this tells us which column has the rownames for the data (aka sample IDs)
+  plot.single.llvfolds <- FALSE
+
+  ## Return gracefully if the llv output files don't exist
+  print('Loading LLV results'); flush.console()
+  if(!( file.exists(paste0(folder,"perf_platypus_expanded.tab")) & file.exists(paste0(folder,"perf_llv_expanded.tab")) ) ){ stop('ERROR: missing LLV output files'); flush.console() }
+
+  ## Load data files
+  print('Loading CV results'); flush.console()
+  accuracy.platypus.iterations <- read.table( paste0(folder,"perf_platypus_expanded.tab"), sep='\t',header=T)
+  acc.norm.views               <- accuracy.platypus.iterations[1, grep('^weighting.norm.view.', colnames(accuracy.platypus.iterations))] 
+  accuracy.llvfolds            <- read.table(paste0(folder,"perf_llv.tab"), sep='\t',header=T)
+  accuracy.platypus.iterations <- read.table(paste0(folder,"perf_llv_expanded.tab"), sep='\t',header=T)
+
+  ## Load Rdata files 
+  ## TODO: Throw error if these don't exist
+  print('Loading LLV RData files'); flush.console()
+  load(paste0(folder,"labelling.matrix.llvlist.Rdata"))
+  load(paste0(folder,"labelling.matrices.views.llvlist.Rdata"))
+
+  ## Extract number of folds and views used
+  llv.folds <- max(accuracy.llvfolds[,"llv.fold"])
+  no.views  <- length(labelling.matrices.views.llvlist[[1]])
+
+  ## Set output plot name
+  pdf.name      <- paste(compound, no.views, 'views', sep='_')
+
+  ## Load the labels
+  labs <- read.table(fn.labs, sep='\t',header=T, row.names=1, check.names=F, stringsAsFactors = FALSE)
+  labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=F]
+
+  ## Quit if the compound to plot isn't in the label data
+  if( !(compound %in% colnames(labs)) ) { stop(paste("ERROR: Labels file does not have column",compound)) }
+
+  ## Reduce labelling matrices to known labels
+  for(llv in 1:llv.folds){
+    ids <- intersect(rownames(labelling.matrix.llvlist[[llv]]),rownames(labs))
+    labelling.matrix.llvlist[[llv]] <- labelling.matrix.llvlist[[llv]][ids,]
+    for(view.i in 1:no.views){
+      labelling.matrices.views.llvlist[[llv]][[view.i]] <- labelling.matrices.views.llvlist[[llv]][[view.i]][ids,]
+    } # end for view
+  } # end for llv
+
+  ## Extend llv matrices to match auc table 
+  ## TODO: this probably could be improved :)
+  no.iterations <- max(accuracy.platypus.iterations[,"iteration"])
+  data.extended <- c()
+  for(llv in 1:llv.folds){
+    iterations.in.fold <- max(accuracy.platypus.iterations[accuracy.platypus.iterations[,"llv.fold"]==llv,"iteration"])
+    # reduce the labelling matrices to the maximum number of iterations
+    labelling.matrix.llvlist[[llv]] <- labelling.matrix.llvlist[[llv]][,1:no.iterations]
+    for(view.i in 1:no.views){
+      labelling.matrices.views.llvlist[[llv]][[view.i]] <- labelling.matrices.views.llvlist[[llv]][[view.i]][,1:no.iterations]
+    }
+    accuracy.platypus.iterations.llvfold <- accuracy.platypus.iterations[which(accuracy.platypus.iterations[,"llv.fold"] == llv),]
+    # fill in the empty iterations with the result from the last iteration
+    if(iterations.in.fold < no.iterations){
+      for(i in (iterations.in.fold + 1):no.iterations){
+        labelling.matrix.llvlist[[llv]][,i] <- labelling.matrix.llvlist[[llv]][,i-1]
+        for(view.i in 1:no.views){
+          labelling.matrices.views.llvlist[[llv]][[view.i]][,i] <- labelling.matrices.views.llvlist[[llv]][[view.i]][,i-1]
+        } # end for view.i
+          accuracy.platypus.iterations.llvfold <- rbind(accuracy.platypus.iterations.llvfold,accuracy.platypus.iterations.llvfold[dim(accuracy.platypus.iterations.llvfold)[[1]],])
+      } # end for iterations.in.fold
+    } # end if
+    data.extended <- rbind(data.extended,accuracy.platypus.iterations.llvfold)
+  } # end for llv
+
+  ## Combine matrices for single llv folds
+  labelling.matrix.complete <- c()
+  for(llv in 1:llv.folds){
+    labelling.matrix.complete <- rbind(labelling.matrix.complete,labelling.matrix.llvlist[[llv]])
+  } # end for llv
+  labelling.matrices.views.complete <- list()
+  for(view.i in 1:no.views){
+    labelling.matrix.view <- c()
+    for(llv in 1:llv.folds){
+      labelling.matrix.view <- rbind(labelling.matrix.view,labelling.matrices.views.llvlist[[llv]][[view.i]])
+    } # end for llv
+    labelling.matrices.views.complete[[view.i]] <- labelling.matrix.view
+  } # end for view.i
+
+  ## Set up PLATYPUS labelling info
+  ## Accuracy, coverage, and thresholds of PLATYPUS labelling
+  ll.acc.avg   <- c()
+  ll.acc.sd    <- c()
+  ll.cov.avg   <- c()
+  ll.cov.sd    <- c()
+  ll.upper.avg <- c()
+  ll.upper.sd  <- c()
+  ll.lower.avg <- c()
+  ll.lower.sd  <- c()
+
+  ## Calculate values
+  for(i in 1:no.iterations){
+    acc.vec   <- c()
+    cov.vec   <- c()
+    upper.vec <- c()
+    lower.vec <- c()
+    for(llv in 1:llv.folds){
+      acc.vec   <- c(acc.vec,data.extended[which(data.extended[,"llv.fold"] == llv),"accuracy"][i])
+      cov.vec   <- c(cov.vec,data.extended[which(data.extended[,"llv.fold"] == llv),"coverage"][i])
+      upper.vec <- c(upper.vec,data.extended[which(data.extended[,"llv.fold"] == llv),"weighting.threshold.upper"][i])
+      lower.vec <- c(lower.vec,data.extended[which(data.extended[,"llv.fold"] == llv),"weighting.threshold.lower"][i])
+    } # end for llv
+    ll.acc.avg   <- c(ll.acc.avg, mean(acc.vec))
+    ll.acc.sd    <- c(ll.acc.sd, sd(acc.vec))
+    ll.cov.avg   <- c(ll.cov.avg, mean(cov.vec))
+    ll.cov.sd    <- c(ll.cov.sd, sd(cov.vec))
+    ll.upper.avg <- c(ll.upper.avg, mean(upper.vec))
+    ll.upper.sd  <- c(ll.upper.sd, sd(upper.vec))
+    ll.lower.avg <- c(ll.lower.avg, mean(lower.vec))
+    ll.lower.sd  <- c(ll.lower.sd, sd(lower.vec))
+  } # end for iterations
+  
+
+  ########## Generate the plots
+
+  ## sample labelling plot
+  unique.labels <- unique(as.vector(labelling.matrix.complete))
+  unique.labels <- unique.labels[!is.na(unique.labels)]
+  unique.labels <- sort(unique.labels,decreasing=T)
+  if(length(unique.labels)!=2) {stop(paste('2 unique labels are needed to generate this plot',length(unique.labels),'unique labels exist'))}  #TODO:added but not tested
+
+  numeric.labelling.matrix <- labelling.matrix.complete
+
+  numeric.labelling.matrix[which(numeric.labelling.matrix==unique.labels[1])] <- 1
+  numeric.labelling.matrix[which(numeric.labelling.matrix==unique.labels[2])] <- -1
+  class(numeric.labelling.matrix) <- "numeric"
+
+  ## get if the labelling is correct
+  ids <- intersect(rownames(labelling.matrix.complete),rownames(labs))
+  correct.labelling.vec <- labelling.matrix.complete[ids,dim(labelling.matrix.complete)[[2]]] == labs[ids,1]
+
+  correct.labelling.vec.num <- correct.labelling.vec
+  correct.labelling.vec.num[which(correct.labelling.vec)] <- 1
+  correct.labelling.vec.num[which(!correct.labelling.vec)] <- -1
+
+  correct.labelling.vec.col <- correct.labelling.vec
+  correct.labelling.vec.col[which(correct.labelling.vec)] <- "green"
+  correct.labelling.vec.col[which(!correct.labelling.vec)] <- "black"
+
+  ## create the matrix basis for the heatmap
+  view.label.matrix <- numeric.labelling.matrix
+  view.label.matrix[] <- NA
+  not.enough.data <- c()
+  for(cell in 1:length(view.label.matrix)){
+    count1 <- 0
+    count2 <- 0
+    countNA <- 0
+    for(view.i in 1:no.views){
+      if(is.na(labelling.matrices.views.complete[[view.i]][cell])){
+        countNA <- countNA + 1
+      } else{
+        if(labelling.matrices.views.complete[[view.i]][cell] == unique.labels[1]){
+          count1 <- count1 + unlist(acc.norm.views[view.i])
+        } # end if
+        if(labelling.matrices.views.complete[[view.i]][cell] == unique.labels[2]){
+          count2 <- count2 + unlist(acc.norm.views[view.i])
+        } # end if
+      } # end if
+    } # end for
+    if(!(countNA == no.views)){
+      if(count1 == count2){
+        view.label.matrix[cell] <- 0
+      } #end if
+      if(count1 > count2){
+        view.label.matrix[cell] <- count1
+      } #end if
+      if(count2 > count1){
+        view.label.matrix[cell] <- -count2
+      } #end if
+    } #end if
+
+    # add the labelling information
+    if(!(is.na(numeric.labelling.matrix[cell]))){
+      if(is.na(view.label.matrix[cell])){
+        view.label.matrix[cell] <- 2*numeric.labelling.matrix[cell]*sum(acc.norm.views)
+      } # end if
+    } # end if
+  } # end for
+
+  not.enough.data <- not.enough.data[not.enough.data<= dim(view.label.matrix)[[1]]]
+  exclude.rows    <- rownames(view.label.matrix[not.enough.data,])
+
+  ## color palette / breaks depend on no.views
+  breaks.vec <- c()
+  for(n in no.views:3){
+    for(z in (n-1):2){
+      b <- z/n
+      if(b > 0.5 & !(b %in% breaks.vec)){
+        breaks.vec <- c(breaks.vec,b)
+      } # end if
+    } # end for
+  } # end for
+
+  ## set up the color breaks vector 
+  breaks.vec         <- sort(breaks.vec)
+  breaks.vec.for.key <- as.character(fractions(breaks.vec))
+    
+  breaks.vec             <- c(-2,-1,-(rev(breaks.vec)),0,breaks.vec,1,2)
+  breaks.vec.inthemiddle <- c()
+  for(b in 1:length(breaks.vec)-1){
+    m <- (breaks.vec[b] + breaks.vec[b+1]) /2
+    breaks.vec.inthemiddle <- c(breaks.vec.inthemiddle,m)
+  }
+  breaks.vec.inthemiddle <- c(-2,breaks.vec.inthemiddle,2)
+    
+  breaks.vec.inthemiddle.middle <- c()
+  for(b in 1:length(breaks.vec.inthemiddle)-1){
+    m <- (breaks.vec.inthemiddle[b] + breaks.vec.inthemiddle[b+1]) /2
+    breaks.vec.inthemiddle.middle <- c(breaks.vec.inthemiddle.middle,m)
+  }
+   
+  ## Set up the matrix of confidences to plot 
+  plot.matrix <- view.label.matrix
+  plot.matrix <- plot.matrix[order(rowSums(cbind(plot.matrix,correct.labelling.vec.num),na.rm=T),decreasing=T),]
+    
+  breaks.vec    <- unique(c(-(2*sum(acc.norm.views)),-(2*sum(acc.norm.views) - 0.5 * sum(acc.norm.views) )
+                     , seq(-sum(acc.norm.views),0,length.out=20),  seq(0,sum(acc.norm.views),length.out=20),(2*sum(acc.norm.views) - 0.5 * sum(acc.norm.views) ), (2*sum(acc.norm.views)) ))
+  label.vec.key <- unique(c( seq(-round(sum(acc.norm.views)),0,length.out=round(sum(acc.norm.views))+1),  seq(0,round(sum(acc.norm.views)),length.out=round(sum(acc.norm.views))+1) ))
+
+  ## Create the pdf and generate the plot 
+  pdf.name <- paste0(folder,"llv_labelling_",pdf.name,".pdf")
+  #pdf(file=paste0(folder,"llv_labelling_",pdf.name,".pdf"),width=10,height=10)
+  pdf(file=pdf.name,width=10,height=10)
+      
+  colfunc <- colorRampPalette(c("blue3","thistle1","red3"))
+  heatmap.2(plot.matrix, dendrogram="none", Rowv=F, Colv=F, na.rm=T, breaks=breaks.vec, col=c("blue4",colfunc(length(breaks.vec)-3),"red4"), key=T, density.info="none",
+    key.xtickfun=function() {
+      label.vec <- c("added","all.agree",abs(label.vec.key),"all.agree","added")
+      breaks.vec.mod <- c((breaks.vec[1]+breaks.vec[2]) /2 , (breaks.vec[2] + breaks.vec[3] ) /2,label.vec.key, -((breaks.vec[2] + breaks.vec[3] ) /2), -((breaks.vec[1]+breaks.vec[2]) /2)) + -breaks.vec[1]
+      breaks.vec.mod <-  breaks.vec.mod / ( breaks.vec.mod[length(breaks.vec.mod)] + -breaks.vec[1] -  -((breaks.vec[1]+breaks.vec[2]) /2) )
+      return(list(at=breaks.vec.mod,labels=label.vec,tick=T))
+    }
+    ,keysize = 1.5, key.xlab=paste0(unique.labels[2],"   <-                 Predictor Agreement [SUM(votes)]                 ->  ",unique.labels[1])
+    ,key.title=NA, key.par=list(mar=c(4, 5, 1, 3) + 0.1)
+    ,lmat = rbind(c(3,0,5),c(4,1,2)), lwid = c(1,0.25,6), lhei = c(0.5,4), xlab="Iterations", ylab="Samples",labRow = NA,labCol = NA ,margins=c(3,3), trace="none", RowSideColors=correct.labelling.vec.col[rownames(plot.matrix)]
+  ) # end heatmap call
+
+  legend("topleft",inset=-0.01,legend=c("Correctly Labelled","Incorrectly Labelled"),fill=c("green","black"), border=NA,bty='n',cex=0.75)
+  dev.off()
+  print(paste('Finished! Success. Plot saved as:', pdf.name));flush.console()
+
+} # End plot.llv
+    
+    

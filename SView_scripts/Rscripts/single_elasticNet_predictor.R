@@ -8,20 +8,25 @@ single.elasticNet.predictor <- function(
   iterations = 100,
   best.parameters = NULL,
   output.value = 'best',
-  parallel = FALSE,
+  is.parallel = FALSE,
   num.cores = 20,
   coef.output.dir = NULL
   ) {
 
-  # set parallel background if parallel is set to true
-  if (parallel) {
+  # set is.parallel background if is.parallel is set to true
+  if (is.parallel) {
     cl <- makeCluster(num.cores);
     registerDoParallel(cl, cores = num.cores);
   }
 
+#  print('In fxn') # TODO
   # create function to run using foreach function 
   calculate.optimal.elasticNet.parameters <- function(alpha.test,iteration,compound,foldid) {
+    #print(paste('Calculating optimal elastic net parameters on',compound))
 
+    #print(paste('alpha.test',alpha.test,'iteration',iteration,'compound',compound,'foldid',foldid)) # TODO
+     #save(compound.sample.feature.matrix,compound.drug.response,compound,alpha.test,foldid, file='test.RData')
+#    save.image('session.RData')
     # run elastic net cross validation
     elastic.net.results <- cv.glmnet(
       x = as.matrix(compound.sample.feature.matrix),
@@ -32,6 +37,7 @@ single.elasticNet.predictor <- function(
       type.measure = "mse"
       );
 
+    #print('Extracting coefs') # TODO
     # extract coefficients
     extracted.coefficients <- coef(elastic.net.results);
 
@@ -42,24 +48,37 @@ single.elasticNet.predictor <- function(
 
     # return results
     return(combined.elastic.net.results);
-    }
+    } # End calculate.optimal.elasticNet.parameters
 
   # check that sample feature matrix is not mising any values
   if (any(is.na(sample.feature.matrix))) {
     stop("NAs are present in sample feature matrix. Please ensure all features have values ...");
   }
 
+#  print(dim(sample.feature.matrix))
+#  print(dim(drug.response))
+
+  print('Dropping to overlapping samples')
+  ## TODO: Kiley changed this on 1/26/2018
   # keep only cell lines that are present in both sample feature matrix and drug response
-  sample.feature.matrix   <- sample.feature.matrix[rownames(sample.feature.matrix) %in% rownames(drug.response),];
-  drug.response       <- drug.response[rownames(drug.response) %in% rownames(sample.feature.matrix),];
+  #sample.feature.matrix   <- sample.feature.matrix[rownames(sample.feature.matrix) %in% rownames(drug.response),];
+  sample.feature.matrix   <- sample.feature.matrix[intersect( rownames(sample.feature.matrix),rownames(drug.response) ),];
+  #drug.response       <- drug.response[rownames(drug.response) %in% rownames(sample.feature.matrix),];
+  drug.response       <- drug.response[ intersect(rownames(sample.feature.matrix),rownames(drug.response)),];
 
+  print(dim(sample.feature.matrix))
+  print(dim(drug.response))
+
+#  print('reordering matrices')
   # order both matrices to ensure rows are the same
-  sample.feature.matrix   <- sample.feature.matrix[order(rownames(sample.feature.matrix)),];
-  drug.response       <- drug.response[order(rownames(drug.response)),];
+#  sample.feature.matrix   <- sample.feature.matrix[order(rownames(sample.feature.matrix)),];
+#  drug.response       <- drug.response[order(rownames(drug.response)),];
 
+  print('Predicting')
   # predict drug sensitivity in each cell line based on single group of features
   elasticNet.results <- list();
   for (compound in colnames(drug.response)) {
+    print(paste('Compound:',compound))
 
     # keep only cells that have sensitive or non-sensitive response
     compound.drug.response       <- drug.response[!is.na(drug.response[,compound]),];
@@ -73,6 +92,7 @@ single.elasticNet.predictor <- function(
     # find number of cell lines overlapping
     num.overlapping.cell.lines <- nrow(compound.drug.response);
 
+    print("Factoring drug response")
     # factor drug response 
     compound.drug.response[,compound] <- factor(compound.drug.response[,compound]);
 
@@ -90,12 +110,15 @@ single.elasticNet.predictor <- function(
 
     # assign a fold to each cell line
     # find the size of each fold 
-    number.in.fold   <- floor(nrow(compound.drug.response)/10);
+    ## TODO: Make each fold has samples from both classes
+    n.folds <- 10
+    number.in.fold   <- floor(nrow(compound.drug.response)/n.folds);
     # set vector to store fold number associated with each cell line
     cell.line.fold   <- rep(NA, nrow(compound.drug.response));
     # create vector to keep track of cell lines not assigned a fold yet
     cell.lines.left <- 1:nrow(compound.drug.response); 
-    for (i in 1:9) {
+    #print("Hitting the weird loop")
+    for (i in 1:(n.folds-1)) {
       # sample cell lines for each fold
       rows.to.choose <- sample(cell.lines.left, size = number.in.fold);
       # assigned sampled cell lines fold number 
@@ -104,21 +127,28 @@ single.elasticNet.predictor <- function(
       cell.lines.left <- cell.lines.left[!cell.lines.left %in% rows.to.choose];
       }
     # assign remaining cell lines fold 10 (may be less than the remaining folds)
-    cell.line.fold[is.na(cell.line.fold)] <- 10;
+    cell.line.fold[is.na(cell.line.fold)] <- n.folds;
 
-    if (parallel) {
-      # test all combinations of parameters running each elastic net in parallel if parallel argument set as true
+    print( table(cell.line.fold,compound.drug.response[,1]) )
+
+    if (is.parallel) {
+    #  print('running the test')
+      # test all combinations of parameters running each elastic net in parallel if is.parallel argument set as true
       elasticNet.model <- foreach(alpha.test = parameters.to.test[,1], iteration = parameters.to.test[,2], .packages = 'glmnet') %dopar%
         calculate.optimal.elasticNet.parameters(alpha.test = alpha.test, iteration = iteration, compound = compound, foldid = cell.line.fold);
       } else {
+    #    print('Running the test')
+	print(compound)
         # if parallelize argument not set as true
         elasticNet.model <- foreach(alpha.test = parameters.to.test[,1], iteration = parameters.to.test[,2], .packages = 'glmnet') %do%
           calculate.optimal.elasticNet.parameters(alpha.test = alpha.test, iteration = iteration, compound = compound, foldid = cell.line.fold);
       }
+    print('Done with cv')
 
     # name each iteration indicating the iteration number and alpha tested
     names(elasticNet.model) <- apply(parameters.to.test, 1, paste, collapse = '_');
 
+    print('Creating parameter matrix')
     # create matrix of parameters
     elastic.net.parameters <- lapply(
       elasticNet.model,
@@ -206,6 +236,8 @@ single.elasticNet.predictor <- function(
 
       # add coefficients to all elasticNet results
       all.elasticNet.results$coefficients <- feature.coefficients;
+
+      print('Finished current run, returning!')
 
       return(all.elasticNet.results);
       }

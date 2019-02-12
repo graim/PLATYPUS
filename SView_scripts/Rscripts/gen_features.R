@@ -10,6 +10,7 @@ generate.feature.data.summary <- function(
   value = 'median',
   num.gene.threshold = 5
   ) {
+  require('e1071')
 
   # keep only genes that are found in both data and feature/gene matrix 
   feature.gene.matrix <- feature.gene.matrix[,colnames(feature.gene.matrix) %in% colnames(gene.sample.data)];
@@ -83,6 +84,15 @@ generate.feature.data.summary <- function(
               max(tmp.median, tmp.var, tmp.kurtosis);
               }
             );
+        } else if (value == 'sum') {
+          # find sum of differences in gene data of genes associated with each feature for each cell line
+          sample.feature.data[,feature] <- apply(
+          gene.sample.data,
+          1,
+          function(sample) {
+            median(sample[colnames(gene.sample.data) %in% feature.genes]);
+            }
+          );
         } else {
           stop("Please specify valid value. Options are 'median', 'variance', 'kurtosis' or 'max' ...")
         }
@@ -102,6 +112,7 @@ generate.feature.data.summary <- function(
         stop("Please specify valid type. Options are 'expression', 'CNV' or 'mutation'...")
       }
     }
+  print('finished generating features')
 
   # return data frame
   return(sample.feature.data);
