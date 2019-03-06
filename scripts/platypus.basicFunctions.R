@@ -297,7 +297,11 @@ view.train.ElasticNet <- function(labels, view.object ){
   #print( summary( labels[ids,1] ) ) # TODO
   
   # Train model
-  require(glmnet)
+  if(!require(glmnet)) {
+    install.packages('glmnet')
+    library(glmnet)
+  }
+  #require(glmnet)
   #print(paste(levels(as.factor(labels[ids,1])),table(as.factor(labels[ids,1])))) # TODO: TEMP PRINT STATEMENT
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,],
                                   as.factor(labels[ids,1]), family=view.object$family, 
@@ -315,7 +319,11 @@ view.train.RandomForest <- function( labels, view.object  ){
 #  print( summary( labels[ids,1] ) ) # TODO
 
   # Train model
-  require(randomForest)
+  if(!require(randomForest)) {
+    install.packages('randomForest')
+    library(randomForest)
+  }
+  #require(randomForest)
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
                                      mtry=view.object$mtry, 
@@ -330,7 +338,11 @@ view.train.SupportVectorMachine <- function( labels, view.object  ){
 #  print( summary( labels[ids,1] ) ) # TODO
 
   # Train model
-  require(e1071)
+  if(!require(e1071)) {
+    install.packages('e1071')
+    library(e1071)
+  }
+  #require(e1071)
   view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
                                        kernel=view.object$kernel,  
                                        cost=view.object$cost, 
@@ -377,11 +389,18 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
 }
 
 
+### PLATYPUS has 2 options for label learning- either using a stacked model or our homebrew optimization function (the ensemble approach)
+platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels,join.fxn='ensemble'){
+  if(join.fxn=='ensemble') { return(platypus.predict.ensemble(view.list, majority, test.ids,weighting,unique.labels)) }
+  else if(join.fxn=='stacked') { return(platypus.predict.stacked(view.list, majority, test.ids,weighting,unique.labels,labels)) }
+  else {} # Only can handle ensemble/stacked learning for now TODO add error message & gracefully quit
+
+}
 
 ## 20180709 - Kiley updates to add in stacked learning
 ## Take a platypus result and predict new labels with it
-#platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
-platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
+platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
+#platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
@@ -423,7 +442,11 @@ platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labe
   if(flag.debug) { print('Created category.all and category.majority');flush.console() }
 
   ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
-  require(randomForest) 
+  if(!require(randomForest)) {
+    install.packages('randomForest')
+    library(randomForest)
+  }
+  #require(randomForest) 
   #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model
   for.model.predictions <- cbind(labels=labels[rownames(predictions),1], predictions) # Combine labels and predictions from each view to train the stacked model
   #print(paste('Class for.model.predictions',class(for.model.predictions)));flush.console()

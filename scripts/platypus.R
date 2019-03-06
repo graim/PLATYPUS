@@ -6,7 +6,8 @@
 ##    Updated: June 2016, Kiley Graim
 ##    Updated: Feb 2017, Kiley Graim
 ##    Updated: Jan 2018, Kiley Graim
-##    Last Updated: Aug 2018, Kiley Graim
+##    Last Updated: Aug 2018, Kiley Graim 
+## Check github for dates of latest updates
 
 # pseudo-code:
 #     for (v in views)
@@ -45,7 +46,7 @@
 # fn.labs: labels file
 # fn.views: list of parameter files
 #platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b='intermediate',i=100, m=100, w=FALSE, u=FALSE, e=FALSE,k=5,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
-platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,k=5,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
+platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE

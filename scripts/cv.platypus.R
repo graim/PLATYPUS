@@ -44,7 +44,8 @@
 
 
 cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=FALSE,weighting=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
-  
+ 
+  ## Load required functions 
   #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
   #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
 
@@ -54,12 +55,25 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   if(flag.debug) { print('Debug is on');flush.console() }
 
 
-  require(foreach)
-  require(methods)
+  ## Load libraries, install if not already installed
+  if(!require(foreach)) {
+    install.packages('foreach')
+    library(foreach)
+  }
+  if(!require(methods)) {
+    install.packages('methods')
+    library(methods)
+  }
+  #require(foreach)
+  #require(methods)
   
   # set parallel background if parallel flag is set
   if(parallel){
-    require(doParallel)
+    if(!require(doParallel)) {
+      install.packages('doParallel')
+      library(doParallel)
+    }
+    #require(doParallel)
     cl <- makeCluster(num.cores,outfile="")
     registerDoParallel(cl, cores = num.cores)
   }
