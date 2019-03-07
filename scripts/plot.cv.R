@@ -2,40 +2,54 @@
 ### Given expanded output from CV tests, generate plots showing AUC change & labels learned
 ######################################################################################
 ##  Arguments: 
-##    compound = name of the outcome (e.g. Lapatinib)
-##    run      = number of views used
-##    fn.labs  = filename of the outcome labels
-##    folder   = output directory name 
+##    fn.labs             = filename of the outcome labels
+##    folder              = output directory name 
+##    plot.single.cvfolds = whether or not to plot lines for each cv fold, in addition to the genearl plots
 ################################################################
 
-plot.cv <- function(compound, run, fn.labs, folder) {
+plot.cv <- function(fn.labs, folder, plot.single.cvfolds=FALSE) {
+
+  ## Check arguments exist
+  if(!file.exists(fn.labs)) { stop(paste("ERROR: Labels file does not exist:",fn.labs)) }
+  if(!file.exists(folder)) { stop(paste("ERROR: Folder does not exist:",folder)) }
 
   ## Don't plot each cv fold
-  plot.single.cvfolds <- FALSE
+  #plot.single.cvfolds <- FALSE
   
-  filename <- paste0(folder,'perf_platypus_expanded.tab')
-  
+  ## Set up some information & fn.cv.resultss
+  fn.cv.results <- file.path(folder,'perf_platypus_expanded.tab') 
+
   ## Gracefully quit if the requisite output file is missing    
-  if(!file.exists(filename)){ stop('ERROR: missing PLATYPUS CV performance file'); flush.console() }
-  accuracy.platypus.iterations <- read.table(filename, sep='\t',header=T)
+  if(!file.exists(fn.cv.results)){ stop('ERROR: missing PLATYPUS CV performance file'); flush.console() }
+  accuracy.platypus.iterations <- read.table(fn.cv.results, sep='\t',header=T)
+  
+  ## Load the labels, remove unlabeled samples
+  labs <- read.table(fn.labs, sep='\t',header=T, row.names=1, check.names=F, stringsAsFactors = FALSE)
+  labs <- labs[which(!(is.na(labs[,1]))),,drop=F]
+  compound <- colnames(labs)[1] # Grab the name of the prediction task from the column name
+  no.views <- length(grep('balanced.accuracy.view.', colnames(accuracy.platypus.iterations))) # Have this value for all views, so pull num views from that
+
+  ## Set output plot name
+  pdf.name <- paste('cv_performance',compound, no.views, 'views.pdf', sep='_')
+  pdf.name <- file.path(folder,pdf.name)
         
-  cv.folds <- max(accuracy.platypus.iterations[,"cv.fold"])
+  cv.folds <- max(accuracy.platypus.iterations$cv.fold)
         
   ## calculate no. correct predictions from accuracy and coverage for all.agree and majority.agree
-  no.correctly.predicted.balanced.all <- accuracy.platypus.iterations[,"coverage.all.agree"] * accuracy.platypus.iterations[,"balanced.accuracy.all.agree"]
+  no.correctly.predicted.balanced.all <- accuracy.platypus.iterations$coverage.all.agree * accuracy.platypus.iterations$balanced.accuracy.all.agree
   accuracy.platypus.iterations <- cbind(accuracy.platypus.iterations,no.correctly.predicted.balanced.all)
         
-  no.correctly.predicted.balanced.majority <- accuracy.platypus.iterations[,"coverage.majority.agree"] * accuracy.platypus.iterations[,"balanced.accuracy.majority.agree"]
+  no.correctly.predicted.balanced.majority <- accuracy.platypus.iterations$coverage.majority.agree * accuracy.platypus.iterations$balanced.accuracy.majority.agree
   accuracy.platypus.iterations <- cbind(accuracy.platypus.iterations,no.correctly.predicted.balanced.majority)
         
   ## extend accuracy data table to maximal number of iterations
-  no.iterations <- max(accuracy.platypus.iterations[,"iteration"])
+  no.iterations <- max(accuracy.platypus.iterations$iteration)
       
   data.extended <- c()  
   for(cv in 1:cv.folds){
-    iterations.in.fold <- max(accuracy.platypus.iterations[accuracy.platypus.iterations[,"cv.fold"]==cv,"iteration"])
+    iterations.in.fold <- max(accuracy.platypus.iterations[accuracy.platypus.iterations$cv.fold==cv,"iteration"])
         
-    accuracy.platypus.iterations.cvfold <- accuracy.platypus.iterations[which(accuracy.platypus.iterations[,"cv.fold"] == cv),]
+    accuracy.platypus.iterations.cvfold <- accuracy.platypus.iterations[which(accuracy.platypus.iterations$cv.fold == cv),]
     # fill in the empty iterations with the result from the last iteration
     if(iterations.in.fold < no.iterations){
       for(i in (iterations.in.fold + 1):no.iterations){
@@ -55,8 +69,8 @@ plot.cv <- function(compound, run, fn.labs, folder) {
     acc.vec.all <- c()
     acc.vec.majority <- c()
     for(cv in 1:cv.folds){
-      acc.vec.all <- c(acc.vec.all,data.extended[which(data.extended[,"cv.fold"] == cv),"balanced.accuracy.all.agree"][i])
-      acc.vec.majority <- c(acc.vec.majority,data.extended[which(data.extended[,"cv.fold"] == cv),"balanced.accuracy.majority.agree"][i])
+      acc.vec.all <- c(acc.vec.all,data.extended[which(data.extended$cv.fold==cv),"balanced.accuracy.all.agree"][i])
+      acc.vec.majority <- c(acc.vec.majority,data.extended[which(data.extended$cv.fold==cv),"balanced.accuracy.majority.agree"][i])
     } # end for cv.folds
     platypus.acc.avg.all <- c(platypus.acc.avg.all, mean(acc.vec.all))
     platypus.acc.sd.all <- c(platypus.acc.sd.all, sd(acc.vec.all))
@@ -67,13 +81,14 @@ plot.cv <- function(compound, run, fn.labs, folder) {
   ## accuracy of views
   views.acc.avg <- c()
   views.acc.sd <- c()
-  for(view.i in 1:length(grep("balanced.accuracy.view.", colnames(data.extended)))){ #TODO
+  for(view.i in 1:no.views){
+  #for(view.i in 1:length(grep("balanced.accuracy.view.", colnames(data.extended)))){ #TODO
     view.acc.avg <- c()
     view.acc.sd <- c()
     for(i in 1:no.iterations){
       acc.vec <- c()
       for(cv in 1:cv.folds){
-        acc.vec <- c(acc.vec,data.extended[which(data.extended[,"cv.fold"] == cv),paste0("balanced.accuracy.view.",view.i)][i])
+        acc.vec <- c(acc.vec,data.extended[which(data.extended$cv.fold==cv),paste0("balanced.accuracy.view.",view.i)][i]) 
       } # end for cv.folds
       view.acc.avg <- c(view.acc.avg, mean(acc.vec))
       view.acc.sd <- c(view.acc.sd, sd(acc.vec))
@@ -91,8 +106,8 @@ plot.cv <- function(compound, run, fn.labs, folder) {
     cov.vec.all <- c()
     cov.vec.majority <- c()
     for(cv in 1:cv.folds){
-      cov.vec.all <- c(cov.vec.all,data.extended[which(data.extended[,"cv.fold"] == cv),"coverage.all.agree"][i])
-      cov.vec.majority <- c(cov.vec.majority,data.extended[which(data.extended[,"cv.fold"] == cv),"coverage.majority.agree"][i])
+      cov.vec.all <- c(cov.vec.all,data.extended[which(data.extended$cv.fold==cv),"coverage.all.agree"][i])
+      cov.vec.majority <- c(cov.vec.majority,data.extended[which(data.extended$cv.fold==cv),"coverage.majority.agree"][i])
     } # end for cv.folds
     platypus.cov.avg.all <- c(platypus.cov.avg.all, mean(cov.vec.all))
     platypus.cov.sd.all <- c(platypus.cov.sd.all, sd(cov.vec.all))
@@ -100,32 +115,13 @@ plot.cv <- function(compound, run, fn.labs, folder) {
     platypus.cov.sd.majority <- c(platypus.cov.sd.majority, sd(cov.vec.majority))
   } # end for no.iterations
       
-  ## no.correctly.predicted = acc*cov
-  platypus.corr.avg.all <- c()
-  platypus.corr.avg.majority <- c()
-  platypus.corr.sd.all <- c()
-  platypus.corr.sd.majority <- c()
-  for(i in 1:no.iterations){
-    corr.vec.all <- c()
-    corr.vec.majority <- c()
-    for(cv in 1:cv.folds){
-      corr.vec.all <- c(corr.vec.all,data.extended[which(data.extended[,"cv.fold"] == cv),"no.correctly.predicted.balanced.all"][i])
-      corr.vec.majority <- c(corr.vec.majority,data.extended[which(data.extended[,"cv.fold"] == cv),"no.correctly.predicted.balanced.majority"][i])
-    } # end for cv.folds
-    platypus.corr.avg.all <- c(platypus.corr.avg.all, mean(corr.vec.all))
-    platypus.corr.sd.all <- c(platypus.corr.sd.all, sd(corr.vec.all))
-    platypus.corr.avg.majority <- c(platypus.corr.avg.majority, mean(corr.vec.majority))
-    platypus.corr.sd.majority <- c(platypus.corr.sd.majority, sd(corr.vec.majority))
-  } # end for no.iterations
-      
-      
   ## inclusion of unlabelled data in training
   platypus.inclusion.avg <- c()
   platypus.inclusion.sd <- c()
   for(i in 1:no.iterations){
     inclusion.vec <- c()
     for(cv in 1:cv.folds){
-      inclusion.vec <- c(inclusion.vec,data.extended[which(data.extended[,"cv.fold"] == cv),"no.ids.labelled"][i])
+      inclusion.vec <- c(inclusion.vec,data.extended[which(data.extended$cv.fold==cv),"no.ids.labelled"][i])
     } # end for cv.folds
     platypus.inclusion.avg <- c(platypus.inclusion.avg, mean(inclusion.vec))
     platypus.inclusion.sd <- c(platypus.inclusion.sd, sd(inclusion.vec))
@@ -138,7 +134,7 @@ plot.cv <- function(compound, run, fn.labs, folder) {
   for(i in 1:no.iterations){
     upper.vec <- c()
     for(cv in 1:cv.folds){
-      upper.vec <- c(upper.vec,data.extended[which(data.extended[,"cv.fold"] == cv),"weighting.threshold.upper"][i])
+      upper.vec <- c(upper.vec,data.extended[which(data.extended$cv.fold==cv),"weighting.threshold.upper"][i])
     } # end for cv.folds
     ll.upper.avg <- c(ll.upper.avg, mean(upper.vec))
     ll.upper.sd <- c(ll.upper.sd, sd(upper.vec))
@@ -149,7 +145,8 @@ plot.cv <- function(compound, run, fn.labs, folder) {
   for(i in 1:no.iterations){
     lower.vec <- c()
     for(cv in 1:cv.folds){
-      lower.vec <- c(lower.vec,data.extended[which(data.extended[,"cv.fold"] == cv),"weighting.threshold.lower"][i])
+      lower.vec <- c(lower.vec,data.extended[which(data.extended$cv.fold==cv),"weighting.threshold.lower"][i])
+      #lower.vec <- c(lower.vec,data.extended[which(data.extended[,"cv.fold"] == cv),"weighting.threshold.lower"][i])
     } # end for cv.folds
     ll.lower.avg <- c(ll.lower.avg, mean(lower.vec))
     ll.lower.sd <- c(ll.lower.sd, sd(lower.vec))
@@ -160,7 +157,7 @@ plot.cv <- function(compound, run, fn.labs, folder) {
   #############
   
   ## Create the pdf where all plots are saved
-  pdf(file=paste0(folder,"cv_performance_",compound,"_",run,".pdf"),width=8,height=7)
+  pdf(file=pdf.name,width=8,height=7)
       
   green.transparent <- rgb(col2rgb("green")[1,1],col2rgb("green")[2,1],col2rgb("green")[3,1],100,maxColorValue=255)
   par(mar=c(4, 4, 0, 0) + 0.1,par(xaxs='i',yaxs='i')) 
@@ -173,7 +170,7 @@ plot.cv <- function(compound, run, fn.labs, folder) {
 
   if(plot.single.cvfolds){
     for(cv in 1:cv.folds){
-      lines(1:no.iterations,data.extended[which(data.extended[,"cv.fold"] == cv),"balanced.accuracy.all.agree"],type='l',col="tomato")
+      lines(1:no.iterations,data.extended[which(data.extended$cv.fold==cv),"balanced.accuracy.all.agree"],type='l',col="tomato")
     } # end for cv.folds
   } # end if
       
@@ -185,7 +182,7 @@ plot.cv <- function(compound, run, fn.labs, folder) {
       
   if(plot.single.cvfolds){
     for(cv in 1:cv.folds){
-      lines(1:no.iterations,data.extended[which(data.extended[,"cv.fold"] == cv),"balanced.accuracy.majority.agree"],type='l',col="lightblue")
+      lines(1:no.iterations,data.extended[which(data.extended$cv.fold==cv),"balanced.accuracy.majority.agree"],type='l',col="lightblue")
     } # end for
   } # end if
      
@@ -220,14 +217,14 @@ plot.cv <- function(compound, run, fn.labs, folder) {
       
   if(plot.single.cvfolds){
     for(cv in 1:cv.folds){
-      lines(1:no.iterations,data.extended[which(data.extended[,"cv.fold"] == cv),"no.ids.labelled"],type='l',col="grey")
+      lines(1:no.iterations,data.extended[which(data.extended$cv.fold==cv),"no.ids.labelled"],type='l',col="grey")
+      lines(1:no.iterations,platypus.inclusion.avg,ylim=c(0,max(platypus.inclusion.avg)),type='l',lwd=2,col="black") # Re-plot black line so it's on top
     } # end for
   } # end if
       
       
   ### Threshold plot
   par(mar=c(4, 4, 0.6, 0.1) + 0.1)
-      
   magenta.transparent <- rgb(col2rgb("magenta")[1,1],col2rgb("magenta")[2,1],col2rgb("magenta")[3,1],100,maxColorValue=255)
       
   plot(1:no.iterations,ll.upper.avg,ylim=c(0,max(ll.upper.avg+ll.upper.sd)),type='l',lwd=2,col="magenta3",xlab="Iteration",ylab="Voting Sum")
@@ -241,7 +238,7 @@ plot.cv <- function(compound, run, fn.labs, folder) {
       
   if(plot.single.cvfolds){
     for(cv in 1:cv.folds){
-      lines(1:no.iterations,data.extended[which(data.extended[,"cv.fold"] == cv),"weighting.threshold.upper"],type='l',col="tomato")
+      lines(1:no.iterations,data.extended[which(data.extended$cv.fold==cv),"weighting.threshold.upper"],type='l',col="tomato")
     } # end for
     lines(1:no.iterations, ll.upper.avg, col = 'red3',lwd=2)
   } # end if
@@ -250,19 +247,18 @@ plot.cv <- function(compound, run, fn.labs, folder) {
   upper <- ll.lower.avg + ll.lower.sd
   lower <- ll.lower.avg - ll.lower.sd
   lightblue.transparent <- rgb(col2rgb("lightblue")[1,1],col2rgb("lightblue")[2,1],col2rgb("lightblue")[3,1],100,maxColorValue=255)
-     
   polygon(c(1:no.iterations, rev(1:no.iterations)), c(upper, rev(lower)), col = green.transparent, border = NA)
       
   if(plot.single.cvfolds){
     for(cv in 1:cv.folds){
-      lines(1:no.iterations,data.extended[which(data.extended[,"cv.fold"] == cv),"weighting.threshold.lower"],type='l',col="lightblue")
+      lines(1:no.iterations,data.extended[which(data.extended$cv.fold==cv),"weighting.threshold.lower"],type='l',col="lightblue")
     } # end for
   } # end if
-      
   lines(1:no.iterations,ll.lower.avg,type='l',lwd=2,col="green3")
-      
   legend("left",legend=c("min. voting for favored label","max. voting for contrary label"), lty=c(1,1),lwd=c(2,2), col=c("magenta3","green3"), bty='n')
-      
+
   dev.off()
+
+  print(paste('Finished! Success. Plot saved as:', pdf.name));flush.console()
 
 } # end plot.cv function
