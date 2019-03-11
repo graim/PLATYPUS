@@ -18,8 +18,8 @@ print('Scripts loaded.'); flush.console()
 
 
 ## Set parameters
-n.iters  <- 100 
-m.thresh <- 90
+n.iters  <- 10 
+m.thresh <- 95
 of.name  <- 'platypus_output_CCLE'
 fn.labs  <- 'CCLE_responselabel_binary_3cat_Lapatinib.tab'
 

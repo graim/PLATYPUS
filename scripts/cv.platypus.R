@@ -299,8 +299,8 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     }
    
     if(!is.na(output.folder)) { 
-      write.table(accuracy.platypus.iterations, file= paste0(output.folder,"/perf_platypus_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
-      save(performance.iterations,file =paste0(output.folder,"performance.iterations.Rdata") )
+      write.table(accuracy.platypus.iterations, file= file.path(output.folder,"perf_platypus_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
+      save(performance.iterations,file =file.path(output.folder,"performance.iterations.Rdata") )
     }
     else { if(flag.debug) { print(class(output.folder)) } } # TODO: is this statement truly debug-only?
     
@@ -312,8 +312,8 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     }
    
     if(!is.na(output.folder)) { 
-      save(labelling.matrix.cvlist,file =paste0(output.folder,"labelling.matrix.cvlist.Rdata") )
-      save(labelling.matrices.views.cvlist,file =paste0(output.folder,"labelling.matrices.views.cvlist.Rdata") )
+      save(labelling.matrix.cvlist,file =file.path(output.folder,"labelling.matrix.cvlist.Rdata") )
+      save(labelling.matrices.views.cvlist,file =file.path(output.folder,"labelling.matrices.views.cvlist.Rdata") )
     }
     
   }
