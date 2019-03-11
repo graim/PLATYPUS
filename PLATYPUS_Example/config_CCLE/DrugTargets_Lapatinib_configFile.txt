@@ -1,0 +1,6 @@
+data.fn	/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/PLATYPUS_Example/data_CCLE/2015-06-20_DrugTargetsExpression.txt
+type	rf
+mtry	10
+ntree	500
+drop	F
+acc	0.794957983193277
