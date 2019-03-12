@@ -45,7 +45,8 @@
 
 # fn.labs: labels file
 # fn.views: list of parameter files
-platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
+platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
+#platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE

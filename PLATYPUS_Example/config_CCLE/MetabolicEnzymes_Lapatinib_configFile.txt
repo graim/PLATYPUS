@@ -1,4 +1,4 @@
-data.fn	/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/PLATYPUS_Example/data_CCLE/2015-07-02_TissueByMetabolicEnzymeExpression.txt
+data.fn	data_CCLE/2015-07-02_TissueByMetabolicEnzymeExpression.txt
 type	rf
 mtry	9
 ntree	1000

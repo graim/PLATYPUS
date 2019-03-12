@@ -1,4 +1,4 @@
-data.fn	/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/PLATYPUS_Example/data_CCLE/2015-07-20_AllSummaryMetrics.txt
+data.fn	data_CCLE/2015-07-20_AllSummaryMetrics.txt
 type	en
 alpha	0.1
 measure	auc

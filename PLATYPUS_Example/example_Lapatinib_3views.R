@@ -2,6 +2,7 @@
 #SBATCH -p ccb --qos=ccb -N3 --exclusive -o ./logs/CCLE_PLATYPUS_Example.%j.out -e ./logs/CCLE_PLATYPUS_Example.%j.err
 
 ## Set up an MVL call for the 3 view Lapatinib
+## TODO: config files have hardcoded location for the data - change to relative paths
 #config.files <- list('DrugTargets_Lapatinib_configFile.txt','DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt','MetabolicEnzymes_Lapatinib_configFile.txt')
 config.files <- list('DrugTargets_Lapatinib_configFile.txt','DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt','MetabolicEnzymes_Lapatinib_configFile.txt','AllSummaryMetrics_Lapatinib_configFile.txt')
 config.files <- paste0('./config_CCLE/', config.files)
@@ -35,11 +36,9 @@ llv.platypus.res <- llv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterat
 ## Call CV
 print('Running cv');flush.console()
 cv.platypus.res <- cv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,weighting=TRUE,output.folder=of.name,expanded.output=TRUE)
+
 ## TODO: add a line to make the boxplot of single view vs PLATYPUS results for this
 ## TODO: this returns NULL. 
-
-print('Running llv');flush.console()
-#save(platypus.res, llv.platypus.res, cv.platypus.res, file='platypus_example_Lap.RData')
 
 ## TODO: Build this up into a full example of how to take 1 data set and create interpreted views from it
 ## So create the interpreted data, run function to do parameter sweep & create config file, then use that in an MVL run
