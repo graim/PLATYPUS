@@ -640,20 +640,6 @@ get.majority.counting <- function(majority,predictions){
   
   return(list(category.majority=category.majority,final=final))
 }
-## Ensemble version of this fxn
-get.majority.counting.ensemble <- function(majority,predictions){
-  category.majority <- rep(NA,dim(predictions)[[1]])
-  names(category.majority) <- rownames(predictions)
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) >= majority)),,drop=FALSE])] <- "not.agreed"
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) < majority)),,drop=FALSE])] <- "not.assessed"
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sort(table(x),decreasing=T)[1] >= majority)),,drop=FALSE])] <- "agreed"
-
-  final <- rep(NA,dim(predictions)[[1]])
-  names(final) <- rownames(predictions)
-  final[names(category.majority[which(category.majority == "agreed")])] <- apply(predictions[names(category.majority[which(category.majority == "agreed")]),],1,function(x) names(sort(table(x),decreasing=T))[1])
-
-  return(list(category.majority=category.majority,final=final))
-}
 
 ## get ensemble predictions for a majority setup - weighting votes by accuracy
 # TODO: Update this to work with a stacked model version
@@ -801,9 +787,6 @@ normalize.accuracy.log <- function(acc){
   }
   return(acc.norm)
 }
-
-
-
 
 ## calculate performance values for a prediction ( used in cv.platypus )
 calculate.performance <- function(predictions,labels,unique.labels){

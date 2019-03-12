@@ -4,7 +4,8 @@
 ##    Updated Sept 2015, Verena Friedl
 ##    Updated: April 2016, Kiley Graim
 ##    Updated: Feb 2017, Kiley Graim
-## Last Updated: Jan 2018, Kiley Graim
+##    Updated: Jan 2018, Kiley Graim
+## Latest updates tracked in github
 
 # pseudo-code:
 #
@@ -40,7 +41,7 @@
 # -k <number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10>
 # -i <maximal number of iterations for each platypus run, eg. 100, default=100>
 # -m <majority threshold in percent, eg. 75, default=100>
-# -w flag for weighting the preditions by accuracy, default=FALSE
+# -w flag for weighting the preditions by accuracy, default=TRUE # TODO removing 
 # -u flag for updating the accuracies of the single views in each iteration, default=FALSE
 # -e flag for expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 # -b <class_name> flag for excluding cell lines that fall into class 'class_name' for the binary drug response definition, default='intermediate'
@@ -53,7 +54,7 @@
 ###################
 # main function
 ###################
-llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
 
@@ -73,6 +74,9 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
     cl <- makeCluster(num.cores,outfile="")
     registerDoParallel(cl, cores = num.cores)
   }
+
+  ## Create output directory if it doesn't already exist TODO untested
+  if(!dir.exists(output.folder)) { dir.create(output.folder) }
  
   ## Load the label data
   labs <- load.label.data(fn.labs,classcol.labs)
@@ -86,7 +90,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
   ## Sort the labels in k subsets
   # Randomly create fold number for each label (balance folds to equal size)    TODO: shall we balance folds for equal class instances (based on the overall occurrence of each class in the data set)?
   # TODO: give the option to give user-defined folds as input
-  # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold - possibly make it so that samples are divided into folds randomly based on amt data available for them
+  # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold
   fold.vec <- c(rep(1:llv.folds, each=floor(dim(labs)[[1]]/llv.folds)),sample(1:llv.folds, dim(labs)[[1]]-llv.folds*(floor(dim(labs)[[1]]/llv.folds)), replace=FALSE))
   fold.vec <- sample(fold.vec)
   labs$fold <- fold.vec
@@ -122,7 +126,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
       llv.fold <- rep(k,dim(perf.iterations)[[1]])
       
       iteration.information <- platypus.result$iteration.information
-      if(weighting){
+#      if(weighting){
         weighting.threshold.upper <- c()
         weighting.threshold.lower <- c()
         weighting.threshold <- c()
@@ -143,30 +147,30 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
         
         perf.iterations <- cbind(llv.fold,weighting.threshold.upper,weighting.threshold.lower,weighting.threshold,no.ids.labelled,no.ids.unlabelled,no.new.labelled,no.ids.left.unlabelled,perf.iterations)
 
-      } else {
-        iterations.woChange <- c()
-        majority <- c()
-        majority.missingData <- c()
-        majority.threshold <- c()
-        no.ids.labelled <- c()
-        no.ids.unlabelled <- c()
-        no.new.labelled <- c()
-        no.ids.left.unlabelled <- c()
-
-        for(i in 1:length(iteration.information)){
-          iterations.woChange <- c(iterations.woChange,iteration.information[[i]]$iterations.woChange)
-          majority <- c(majority,iteration.information[[i]]$majority)
-          majority.missingData <- c(majority.missingData,iteration.information[[i]]$majority.missingData)
-          majority.threshold <- c(majority.threshold,iteration.information[[i]]$majority.threshold)
-          no.ids.labelled <- c(no.ids.labelled,iteration.information[[i]]$no.ids.labelled)
-          no.ids.unlabelled <- c(no.ids.unlabelled,iteration.information[[i]]$no.ids.unlabelled)
-          no.new.labelled <- c(no.new.labelled,iteration.information[[i]]$no.new.labelled)
-          no.ids.left.unlabelled <- c(no.ids.left.unlabelled,iteration.information[[i]]$no.ids.left.unlabelled)
-        }
-        
-        perf.iterations <- cbind(llv.fold,iterations.woChange,majority,majority.missingData,majority.threshold,no.ids.labelled,no.ids.unlabelled,no.new.labelled,no.ids.left.unlabelled,perf.iterations)
-
-      } # end if(weighting)
+#      } else {
+#        iterations.woChange <- c()
+#        majority <- c()
+#        majority.missingData <- c()
+#        majority.threshold <- c()
+#        no.ids.labelled <- c()
+#        no.ids.unlabelled <- c()
+#        no.new.labelled <- c()
+#        no.ids.left.unlabelled <- c()
+#
+#        for(i in 1:length(iteration.information)){
+#          iterations.woChange <- c(iterations.woChange,iteration.information[[i]]$iterations.woChange)
+#          majority <- c(majority,iteration.information[[i]]$majority)
+#          majority.missingData <- c(majority.missingData,iteration.information[[i]]$majority.missingData)
+#          majority.threshold <- c(majority.threshold,iteration.information[[i]]$majority.threshold)
+#          no.ids.labelled <- c(no.ids.labelled,iteration.information[[i]]$no.ids.labelled)
+#          no.ids.unlabelled <- c(no.ids.unlabelled,iteration.information[[i]]$no.ids.unlabelled)
+#          no.new.labelled <- c(no.new.labelled,iteration.information[[i]]$no.new.labelled)
+#          no.ids.left.unlabelled <- c(no.ids.left.unlabelled,iteration.information[[i]]$no.ids.left.unlabelled)
+#        }
+#        
+#        perf.iterations <- cbind(llv.fold,iterations.woChange,majority,majority.missingData,majority.threshold,no.ids.labelled,no.ids.unlabelled,no.new.labelled,no.ids.left.unlabelled,perf.iterations)
+#
+#      } # end if(weighting)
       
     } # end if(expanded.output)
 
