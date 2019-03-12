@@ -126,9 +126,9 @@ setAccNorm <- function(view.object, newValue){
 ## Read in the parameter file for a view and return a view object
 ## TODO: Add in option for view name
 ## TODO: add in SVM models
-load.parameterfile <- function(filename){
+load.parameterfile <- function(filename, delim='\t'){
   
-  param.table <- read.table(filename, sep='\t',header=F, row.names=1)
+  param.table <- read.table(filename, sep=delim,header=F, row.names=1)
   #print( paste('Loaded parameter file', filename) )
   
   # check the type and create a view object
@@ -186,10 +186,10 @@ load.parameterfile <- function(filename){
 load.data <- function(view.object){
   UseMethod("load.data",view.object)
 }
-load.data.ElasticNet <- function(view.object){
+load.data.ElasticNet <- function(view.object,delim='\t'){
   
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep='\t',header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for Elastic Net view',view.object$data.fn))
   # TODO: It's not always tab-delimited!!!
   
@@ -203,9 +203,9 @@ load.data.ElasticNet <- function(view.object){
   
   return(view.object)
 }
-load.data.RandomForest <- function(view.object){
+load.data.RandomForest <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep='\t',header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for Random Forest view',view.object$data.fn))
   ## TODO: It's not always tab-delimited!!!
   
@@ -223,9 +223,9 @@ load.data.RandomForest <- function(view.object){
   }
   return(view.object)
 }
-load.data.SupportVectorMachine <- function(view.object){
+load.data.SupportVectorMachine <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep='\t',header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for SVM view',view.object$data.fn))
   ## TODO: It's not always tab-delimited!!!
 
@@ -241,10 +241,9 @@ load.data.SupportVectorMachine <- function(view.object){
 }
 
 ## load the label file
-load.label.data <- function(fn.labs,classcol.labs){
+load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
-  labs <- read.table(fn.labs, sep='\t',header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
-  # TODO: not always tab-delimited!
+  labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
   # take out 'NA' values
   labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=F]
   

@@ -37,7 +37,7 @@
 # OPTIONS:
 # -i <maximal number of iterations for each platypus run, eg. 100, default=100>
 # -m <majority threshold in percent, eg. 75, default=100>
-# -w flag for weighting the preditions by accuracy, default=FALSE
+# -w flag for weighting the preditions by accuracy, default=FALSE # TODO REMOVE
 # -u flag for updating the accuracies of the single views in each iteration, default=FALSE
 # -e flag for expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 # -b <class_name> flag for excluding cell lines that fall into class 'class_name' for the binary drug response definition, default='intermediate'
@@ -46,7 +46,6 @@
 # fn.labs: labels file
 # fn.views: list of parameter files
 platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
-#platypus <- function(fn.labs, fn.views, ignore.label='intermediate', b=ignore.label,i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
@@ -90,7 +89,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
   new.labels <- c()
   
   # number of views, which have to agree on a prediction, to take it into the training data
-  if(weighting){
+#  if(weighting){
     
     view.list <- normalize.accuracies(view.list)
     sum.acc <- 0
@@ -103,11 +102,11 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     weighting.threshold.upper <- sum.acc
     weighting.threshold.lower <- 0
     
-  } else {
-    majority <- length(view.list)
-    majority.missingData <- length(view.list)
-    majority.threshold <- ceiling(majority.threshold.percent*majority/100)
-  }
+#  } else {
+#    majority <- length(view.list)
+#    majority.missingData <- length(view.list)
+#    majority.threshold <- ceiling(majority.threshold.percent*majority/100)
+#  }
 
   
   # counter
@@ -135,13 +134,13 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
 
     ## Collect starting information for the iteration
     if(expanded.output){
-      if(weighting){
+#      if(weighting){
         iteration.list <- list(iteration=i,weighting.threshold=weighting.threshold
                                ,no.ids.labelled=dim(labels)[[1]],no.ids.unlabelled=length(ids.unlabelled))
-      } else {
-        iteration.list <- list(iteration=i,iterations.woChange=iterations.woChange,majority=majority,majority.missingData=majority.missingData,majority.threshold=majority.threshold
-                               ,no.ids.labelled=dim(labels)[[1]],no.ids.unlabelled=length(ids.unlabelled))
-      }
+#      } else {
+#        iteration.list <- list(iteration=i,iterations.woChange=iterations.woChange,majority=majority,majority.missingData=majority.missingData,majority.threshold=majority.threshold
+#                               ,no.ids.labelled=dim(labels)[[1]],no.ids.unlabelled=length(ids.unlabelled))
+#      }
     }
     
     ## Train each view
@@ -158,7 +157,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
 
 
     ## Add unknown labels to known, where view agreement meets requirements
-    if(weighting){
+#    if(weighting){
       
       if(updating){
           ## update accuracies
@@ -183,9 +182,9 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
         weighting.threshold.lower <- new.labelled.list$weighting.threshold.lower
       }
       
-    } else {
-      new.labelled <- get.new.labels.majorityCount(predictions,majority,majority.missingData)
-    }
+#    } else {
+#      new.labelled <- get.new.labels.majorityCount(predictions,majority,majority.missingData)
+#    }
     
     
     colnames(new.labelled) <- colnames(labels)
@@ -207,10 +206,10 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
 
     ## Collect information about the iterations for expanded output
     if(expanded.output){
-      if(weighting){
+#      if(weighting){
         iteration.list$weighting.threshold.upper <- weighting.threshold.upper
         iteration.list$weighting.threshold.lower <- weighting.threshold.lower
-      }
+#      }
       iteration.list$no.new.labelled <- length(new.labelled)
       iteration.list$no.ids.left.unlabelled <- length(ids.unlabelled)
       iteration.list$view.list <- view.list
@@ -222,28 +221,28 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
       }
     }
      
-    if(!weighting) {
-      ## Adjust majority value if we didn't learn any new labels for three iterations
-      if( length(new.labelled) <= 0 ) {
-        iterations.woChange <- iterations.woChange + 1
-      } else{
-        iterations.woChange <- 0 #reset if new labels were learned
-      }
-      ## Majority value for missing data is reduced first (prefer missing data over contrary predictions)
-      ## Quit, if both majority values are already at the threshold 
-      if(iterations.woChange >= 3){ 
-        if(majority > majority.threshold){
-          if(majority != majority.missingData){ # adjust overall majority value
-            majority <- majority - 1
-          } else{
-            majority.missingData <- majority.missingData - 1  # adjust the majority value for missing data first
-          }
-          iterations.woChange <- 0
-        } else{
-          break
-        }
-      }
-    }
+#    if(!weighting) {
+#      ## Adjust majority value if we didn't learn any new labels for three iterations
+#      if( length(new.labelled) <= 0 ) {
+#        iterations.woChange <- iterations.woChange + 1
+#      } else{
+#        iterations.woChange <- 0 #reset if new labels were learned
+#      }
+#      ## Majority value for missing data is reduced first (prefer missing data over contrary predictions)
+#      ## Quit, if both majority values are already at the threshold 
+#      if(iterations.woChange >= 3){ 
+#        if(majority > majority.threshold){
+#          if(majority != majority.missingData){ # adjust overall majority value
+#            majority <- majority - 1
+#          } else{
+#            majority.missingData <- majority.missingData - 1  # adjust the majority value for missing data first
+#          }
+#          iterations.woChange <- 0
+#        } else{
+#          break
+#        }
+#      }
+#    }
     
 
     
@@ -252,13 +251,13 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
   } # end for no.iterations
 
   ## Collect information for the returned result
-  if(weighting){
+#  if(weighting){
     final.result.list <- list(final.views=view.list,labels.complete=labels,labels.new=new.labels,unlabelled.ids=ids.unlabelled
                               ,weighting.threshold=weighting.threshold,no.iterations=no.iterations,expanded.output=expanded.output)
-  } else {
-    final.result.list <- list(final.views=view.list,labels.complete=labels,labels.new=new.labels,unlabelled.ids=ids.unlabelled
-                              ,majority.threshold=majority.threshold,no.iterations=no.iterations,expanded.output=expanded.output)
-  }
+#  } else {
+#    final.result.list <- list(final.views=view.list,labels.complete=labels,labels.new=new.labels,unlabelled.ids=ids.unlabelled
+#                              ,majority.threshold=majority.threshold,no.iterations=no.iterations,expanded.output=expanded.output)
+#  }
 
   if(expanded.output){
     final.result.list$iteration.information <- collect.iteration.lists
