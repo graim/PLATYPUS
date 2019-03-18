@@ -48,8 +48,8 @@
 platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, w=FALSE, u=FALSE, e=FALSE,weighting=TRUE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
-  #flag.debug <- TRUE
-  flag.debug <- FALSE 
+  flag.debug <- TRUE
+  #flag.debug <- FALSE 
   if(flag.debug) { print('Debug is on');flush.console() }
 
   ## Set more readable names
@@ -93,7 +93,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     
     view.list <- normalize.accuracies(view.list)
     sum.acc <- 0
-    for(view.i in 1:length(view.list)){
+    for(view.i in seq(length(view.list))){
       sum.acc = sum.acc + view.list[[view.i]]$acc.norm
     }
     
@@ -118,13 +118,13 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     
     unlabelled.matrix <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=no.iterations,dimnames=list(ids.unlabelled))
     unlabelled.matrices.list <- list()
-    for (view.i in 1:length(view.list)) {
+    for (view.i in seq(length(view.list))) {
       unlabelled.matrices.list[[view.i]] <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=no.iterations,dimnames=list(ids.unlabelled))
     }
   }
   
   ## Repeat until all labels are 'known' OR we hit the iterations limit OR no new labels are added anymore
-  for (i in 1:no.iterations) {
+  for (i in seq(no.iterations)) {
 	print(paste('Iteration',i))
     
     ## Quit if there aren't any unlabelled IDs left
@@ -148,8 +148,8 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     view.list <- lapply(view.list, function(x) { view.train(labels,x) } )
     
     ## Test on the unknown labels
-    predictions <- matrix(data=NA, nrow=length(ids.unlabelled), ncol=length(view.list),dimnames=list(ids.unlabelled, 1:length(view.list)))
-    for(view.i in 1:length(view.list)){
+    predictions <- matrix(data=NA, nrow=length(ids.unlabelled), ncol=length(view.list),dimnames=list(ids.unlabelled, seq(length(view.list))))
+    for(view.i in seq(length(view.list))){
       ids <- intersect(ids.unlabelled,rownames(view.list[[view.i]]$data.matrix))
       predictions[ids,view.i] <- view.predict(ids.unlabelled,view.list[[view.i]]) 
     }
@@ -164,7 +164,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
           view.list <- update.accuracies(view.list, known.labels)
           ## update weighting.threshold
           sum.acc <- 0
-          for(view.i in 1:length(view.list)){
+          for(view.i in seq(length(view.list))){
             sum.acc = sum.acc + view.list[[view.i]]$acc.norm
         #    print( view.list[[view.i]]$acc.norm)
           }
@@ -216,7 +216,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
       collect.iteration.lists[[i]] <- iteration.list
       
       unlabelled.matrix[rownames(new.labels),i] <- new.labels
-      for (view.i in 1:length(view.list)) {
+      for (view.i in seq(length(view.list))) {
         unlabelled.matrices.list[[view.i]][rownames(predictions),i] <- predictions[,view.i]
       }
     }

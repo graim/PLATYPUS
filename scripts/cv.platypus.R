@@ -73,7 +73,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold
   if(is.numeric(cv.folds)){
     print(paste('Number of cv folds provided:',cv.folds));flush.console()
-    fold.vec <- c(rep(1:cv.folds, each=floor(dim(labs)[[1]]/cv.folds)),sample(1:cv.folds, dim(labs)[[1]]-cv.folds*(floor(dim(labs)[[1]]/cv.folds)), replace=FALSE))
+    fold.vec <- c(rep(seq(cv.folds), each=floor(dim(labs)[[1]]/cv.folds)),sample(seq(cv.folds), dim(labs)[[1]]-cv.folds*(floor(dim(labs)[[1]]/cv.folds)), replace=FALSE))
     fold.vec <- sample(fold.vec)
     labs$fold <- fold.vec
   } else if(is.vector(cv.folds) & length(cv.folds)==nrow(labs)) { 
@@ -129,7 +129,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     perf.views <- list()
     accuracy.views <- c()
     balanced.accuracy.views <- c()
-    for(view.i in 1:length(platypus.result$final.views)){
+    for(view.i in seq(length(platypus.result$final.views))){
       perf.view <- calculate.performance.view(predictions[,view.i,drop=F],labs[,classcol.labs,drop=F],unique.labels)
       perf.views[[view.i]] <- perf.view
       accuracy.views <- c(accuracy.views,perf.view$accuracy)
@@ -146,7 +146,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       iteration.information <- platypus.result$iteration.information
       performance.iterations <- list()
       accuracy.platypus.iterations <- c()
-      for(i in 1:length(iteration.information)){
+      for(i in seq(length(iteration.information))){
         ## Predict hold-out data subset with platypus view from iteration
         view.list <- iteration.information[[i]]$view.list
         test.ids <- rownames(labs[which(labs$fold == k & labs[,classcol.labs] != ignore.label),,drop=F])
@@ -170,7 +170,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
         balanced.accuracy.views <- c()
         weighting.views <- c()
         weighting.norm.views <- c()
-        for(view.i in 1:length(view.list)){
+        for(view.i in seq(length(view.list))){
           perf.view <- calculate.performance.view(predictions[,view.i,drop=F],labs[,classcol.labs,drop=F],unique.labels)
           perf.views[[view.i]] <- perf.view
           accuracy.views <- c(accuracy.views,perf.view$accuracy)
@@ -222,7 +222,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   
   if (parallel) {
     print("working parallel")
-    cv.result.list <- foreach(k=1:cv.folds, .export=c("platypus", "drop.features" ,"ElasticNet" ,"RandomForest" ,"setAlpha" ,"setMeasure" ,"setMtry"
+    cv.result.list <- foreach(k=seq(cv.folds), .export=c("platypus", "drop.features" ,"ElasticNet" ,"RandomForest" ,"setAlpha" ,"setMeasure" ,"setMtry"
       ,"setNtree" ,"setDrop" ,"setDropTo" ,"setAcc" ,"setAccNorm" ,"load.parameterfile" ,"load.data" ,"load.data.ElasticNet" ,"load.data.RandomForest"
       ,"load.label.data" ,"get.unique.labels" ,"view.train" ,"view.train.ElasticNet" ,"view.train.RandomForest" ,"view.predict" ,"view.predict.ElasticNet"
       ,"view.predict.RandomForest" ,"platypus.predict" ,"update.accuracies" ,"update.accuracy" ,"update.accuracy.ElasticNet" ,"update.accuracy.RandomForest"
@@ -232,7 +232,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       , .packages=c("glmnet","randomForest")) %dopar% do.one.cvfold(k = k)
   } else {
     print("working non-parallel")
-    cv.result.list <- foreach(k=1:cv.folds) %do% do.one.cvfold(k = k)
+    cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k)
   }
 
   if(flag.debug) { print('out of cv folds loop');flush.console() }
@@ -240,13 +240,13 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   ## Collect accuracy over cv-iterations
   accuracy.cvfolds <- c()
   performance.cvfolds <- list()
-  for(k in 1:cv.folds){
+  for(k in seq(cv.folds)){
     accuracy.cvfolds <- rbind(accuracy.cvfolds,cv.result.list[[k]]$accuracy.cvfolds)
     performance.cvfolds[[k]] <- cv.result.list[[k]]$performance.cvfolds
   }
   
   colnames(accuracy.cvfolds) <- c("cv.fold","accuracy.all.agree","balanced.accuracy.all.agree","coverage.all.agree","accuracy.majority.agree","balanced.accuracy.majority.agree","coverage.majority.agree"
-                                  ,paste0("accuracy.view.",1:length(fn.views)),paste0("balanced.accuracy.view.",1:length(fn.views)))
+                                  ,paste0("accuracy.view.",seq(length(fn.views))),paste0("balanced.accuracy.view.",seq(length(fn.views))))
 
   if(flag.debug) { print('collected cv iteration performances');flush.console() }
 
@@ -263,7 +263,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     ## Collect accuracy over platypus-iterations
     accuracy.platypus.iterations <- c()
     performance.iterations <- list()
-    for(k in 1:cv.folds){
+    for(k in seq(cv.folds)){
       accuracy.platypus.iterations <- rbind(accuracy.platypus.iterations,cv.result.list[[k]]$accuracy.platypus.iterations)
       performance.iterations[[k]] <- cv.result.list[[k]]$performance.iterations
     }
@@ -271,12 +271,12 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
 #    if(weighting){
 #      if(flag.debug) { print('Weighting is on in expanded.output loop');flush.console() }
       colnames(accuracy.platypus.iterations) <- c("cv.fold","iteration","weighting.threshold.upper","weighting.threshold.lower","weighting.threshold"
-                                             ,paste0("weighting.view.",1:length(fn.views)),paste0("weighting.norm.view.",1:length(fn.views))
+                                             ,paste0("weighting.view.",seq(length(fn.views))),paste0("weighting.norm.view.",seq(length(fn.views)))
                                              ,"no.ids.labelled","no.ids.unlabelled"
                                              ,"no.new.labelled", "no.ids.left.unlabelled"
                                              ,"accuracy.all.agree","balanced.accuracy.all.agree","coverage.all.agree"
                                              ,"accuracy.majority.agree","balanced.accuracy.majority.agree","coverage.majority.agree"
-                                             ,paste0("accuracy.view.",1:length(fn.views)),paste0("balanced.accuracy.view.",1:length(fn.views)))
+                                             ,paste0("accuracy.view.",seq(length(fn.views))),paste0("balanced.accuracy.view.",seq(length(fn.views))))
 #    } else{
 #      if(flag.debug) { print('Weighting is off in expanded.output loop');flush.console() } # TODO next line is where weighting=OFF runs fail
 #      colnames(accuracy.platypus.iterations) <- c("cv.fold","iteration","iterations.woChange","majority","majority.missingData","majority.threshold"
@@ -296,7 +296,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     
     labelling.matrix.cvlist <- list()
     labelling.matrices.views.cvlist <- list()
-    for(k in 1:cv.folds){
+    for(k in seq(cv.folds)){
       labelling.matrix.cvlist[[k]] <- cv.result.list[[k]]$labelling.matrix
       labelling.matrices.views.cvlist[[k]] <- cv.result.list[[k]]$labelling.matrices.views
     }

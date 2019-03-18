@@ -60,8 +60,8 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
 
   
   ## Set debug flag on/off for testing - currently we don't use this
-  #flag.debug <- TRUE
-  flag.debug <- FALSE
+  flag.debug <- TRUE
+  #flag.debug <- FALSE
   if(flag.debug) { print('Debug is on');flush.console() }
 
   require(foreach)
@@ -91,7 +91,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
   # Randomly create fold number for each label (balance folds to equal size)    TODO: shall we balance folds for equal class instances (based on the overall occurrence of each class in the data set)?
   # TODO: give the option to give user-defined folds as input
   # TODO: check to make sure that each sample has data in at least 1 view before assigning a fold
-  fold.vec <- c(rep(1:llv.folds, each=floor(dim(labs)[[1]]/llv.folds)),sample(1:llv.folds, dim(labs)[[1]]-llv.folds*(floor(dim(labs)[[1]]/llv.folds)), replace=FALSE))
+  fold.vec <- c(rep(seq(llv.folds), each=floor(dim(labs)[[1]]/llv.folds)),sample(seq(llv.folds), dim(labs)[[1]]-llv.folds*(floor(dim(labs)[[1]]/llv.folds)), replace=FALSE))
   fold.vec <- sample(fold.vec)
   labs$fold <- fold.vec
     
@@ -135,7 +135,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
         no.new.labelled <- c()
         no.ids.left.unlabelled <- c()
 
-        for(i in 1:length(iteration.information)){
+        for(i in seq(length(iteration.information))){
           weighting.threshold.upper <- c(weighting.threshold.upper,iteration.information[[i]]$weighting.threshold.upper)
           weighting.threshold.lower <- c(weighting.threshold.lower,iteration.information[[i]]$weighting.threshold.lower)
           weighting.threshold <- c(weighting.threshold,iteration.information[[i]]$weighting.threshold)
@@ -182,7 +182,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
   } # end function do.one.llvfold
   
   if (parallel) {
-    llv.result.list <- foreach(k=1:llv.folds, .export=c("platypus","drop.features","ElasticNet","RandomForest","setAlpha","setMeasure","setMtry",
+    llv.result.list <- foreach(k=seq(llv.folds), .export=c("platypus","drop.features","ElasticNet","RandomForest","setAlpha","setMeasure","setMtry",
         "setNtree","setDrop","setDropTo","setAcc","setAccNorm","load.parameterfile","load.data","load.data.ElasticNet","load.data.RandomForest",
         "load.label.data","get.unique.labels","view.train","view.train.ElasticNet","view.train.RandomForest","view.predict","view.predict.ElasticNet",
         "view.predict.RandomForest","platypus.predict","update.accuracies","update.accuracy","update.accuracy.ElasticNet","update.accuracy.RandomForest",
@@ -191,21 +191,21 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
         .verbose=TRUE, .packages=c("glmnet","randomForest")) %dopar%
       do.one.llvfold(k = k)
   } else {
-    llv.result.list <- foreach(k=1:llv.folds) %do%
+    llv.result.list <- foreach(k=seq(llv.folds)) %do%
       do.one.llvfold(k = k)
   }  
   
   ## Get output together
   # Collect accuracy over llv-iterations
   accuracy.llvfolds <- c()
-  for(k in 1:llv.folds){
+  for(k in seq(llv.folds)){
     accuracy.llvfolds <- rbind(accuracy.llvfolds,llv.result.list[[k]]$perf.llvfold)
   }
 
   if(expanded.output){
     ## Collect accuracy over platypus-iterations and labelling information
     accuracy.platypus.iterations <- c()
-    for(k in 1:llv.folds){
+    for(k in seq(llv.folds)){
       accuracy.platypus.iterations <- rbind(accuracy.platypus.iterations,llv.result.list[[k]]$perf.iterations)
     }
     
@@ -216,7 +216,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
     
     labelling.matrix.llvlist <- list()
     labelling.matrices.views.llvlist <- list()
-    for(k in 1:llv.folds){
+    for(k in seq(llv.folds)){
       labelling.matrix.llvlist[[k]] <- llv.result.list[[k]]$labelling.matrix
       labelling.matrices.views.llvlist[[k]] <- llv.result.list[[k]]$labelling.matrices.views
     }
