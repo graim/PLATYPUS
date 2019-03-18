@@ -25,7 +25,7 @@ drop.features <- function(dat, k) {
 
 
 ## create a class for each view-type
-ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measure="mse",drop=TRUE,drop.to=5000,model=c(),acc=0.5, acc.norm=0, family='binomial') {
+ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measure="auc",drop=TRUE,drop.to=5000,model=c(),acc=0.5, acc.norm=0, family='binomial') {
   me <- list(
     param.file = param.file,
     data.matrix = data.matrix,
@@ -187,11 +187,9 @@ load.data <- function(view.object){
   UseMethod("load.data",view.object)
 }
 load.data.ElasticNet <- function(view.object,delim='\t'){
-  
   # read the matrix from the file
   mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for Elastic Net view',view.object$data.fn))
-  # TODO: It's not always tab-delimited!!!
   
   # drop features
   if(view.object$drop){
@@ -207,7 +205,6 @@ load.data.RandomForest <- function(view.object,delim='\t'){
   # read the matrix from the file
   mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for Random Forest view',view.object$data.fn))
-  ## TODO: It's not always tab-delimited!!!
   
   # drop features
   if(view.object$drop){
@@ -227,7 +224,6 @@ load.data.SupportVectorMachine <- function(view.object,delim='\t'){
   # read the matrix from the file
   mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
   print(paste('data loaded for SVM view',view.object$data.fn))
-  ## TODO: It's not always tab-delimited!!!
 
   # drop features
   if(view.object$drop){
@@ -241,12 +237,13 @@ load.data.SupportVectorMachine <- function(view.object,delim='\t'){
 }
 
 ## load the label file
+## TODO: is this really necessary as a standalone function???
 load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
   labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
   # take out 'NA' values
   labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=F]
-  
+  ## TODO: should remove ignore.label samples also?
   return(labs)
 }
 ## retrieve the two labels for training/predicting
@@ -277,11 +274,10 @@ get.unique.labels <- function(label.vec,ignore.label){
 
 ## find strings starting with a number and add an 'X' in the front
 # this is done to ensure consistence over all rownames and colnames for R matrices (R adds 'X' to colnames starting with a number)
-## TODO: finish removing this from the package
-addX <- function(vector){
-  vector[grep("^[0-9].",vector)] <- paste0("X",vector[grep("^[0-9].",vector)])
-  return(vector)
-}
+#addX <- function(vector){
+#  vector[grep("^[0-9].",vector)] <- paste0("X",vector[grep("^[0-9].",vector)])
+#  return(vector)
+#}
 
 
 ## Train one view, given a specific model type
@@ -302,12 +298,13 @@ view.train.ElasticNet <- function(labels, view.object ){
   }
   #require(glmnet)
   #print(paste(levels(as.factor(labels[ids,1])),table(as.factor(labels[ids,1])))) # TODO: TEMP PRINT STATEMENT
+  # TODO: make sure we have enough samples for the number of folds using - reduce folds if not at least 10 samples/fold
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,],
                                   as.factor(labels[ids,1]), family=view.object$family, 
                                   type.measure=view.object$measure, 
                                   alpha=view.object$alpha 
                                   ,nfolds=5 # TODO, shouldn't be hard coded
-                                  , keep=T)  #defaults to nfold=10
+                                  , keep=T)
   return(view.object)
 }
 view.train.RandomForest <- function( labels, view.object  ){

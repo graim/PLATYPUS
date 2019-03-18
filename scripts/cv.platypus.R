@@ -224,7 +224,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     print("working parallel")
     cv.result.list <- foreach(k=1:cv.folds, .export=c("platypus", "drop.features" ,"ElasticNet" ,"RandomForest" ,"setAlpha" ,"setMeasure" ,"setMtry"
       ,"setNtree" ,"setDrop" ,"setDropTo" ,"setAcc" ,"setAccNorm" ,"load.parameterfile" ,"load.data" ,"load.data.ElasticNet" ,"load.data.RandomForest"
-      ,"load.label.data" ,"get.unique.labels" ,"addX" ,"view.train" ,"view.train.ElasticNet" ,"view.train.RandomForest" ,"view.predict" ,"view.predict.ElasticNet"
+      ,"load.label.data" ,"get.unique.labels" ,"view.train" ,"view.train.ElasticNet" ,"view.train.RandomForest" ,"view.predict" ,"view.predict.ElasticNet"
       ,"view.predict.RandomForest" ,"platypus.predict" ,"update.accuracies" ,"update.accuracy" ,"update.accuracy.ElasticNet" ,"update.accuracy.RandomForest"
       ,"calculate.accuracy" ,"get.majority.counting" ,"get.majority.weighting" ,"get.new.labels.majorityCount" ,"get.new.labels.majorityWeighted" ,"normalize.accuracies"
       ,"normalize.accuracy.linear" ,"normalize.accuracy.log" ,"calculate.performance" ,"calculate.performance.view" ,"get.labelling.performance")
