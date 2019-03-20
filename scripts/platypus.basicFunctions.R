@@ -10,7 +10,7 @@
 drop.features <- function(dat, k) {
   if(ncol(dat) > k ) {
     vars <- apply(dat, 2, var)
-    vars <- sort(vars, decreasing=T)
+    vars <- sort(vars, decreasing=TRUE)
     thresh <- vars[k]
     dat <- dat[,names(which(vars>=thresh))]
     write( paste('Shrinking to', k, 'most variable features...\n', ncol(dat)), stdout() )
@@ -82,92 +82,50 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
   return(me)
 }
 
-## Set methods for the view objects
-setAlpha <- function(view.object, newValue){
-  view.object$alpha <- newValue
-  return(view.object)
-}
-
-setMeasure <- function(view.object, newValue){
-  view.object$measure <- newValue
-  return(view.object)
-}
-
-setMtry <- function(view.object, newValue){
-  view.object$mtry <- newValue
-  return(view.object)
-}
-
-setNtree <- function(view.object, newValue){
-  view.object$ntree <- newValue
-  return(view.object)
-}
-
-setDrop <- function(view.object, newValue){
-  view.object$drop <- newValue
-  return(view.object)
-}
-
-setDropTo <- function(view.object, newValue){
-  view.object$drop.to <- newValue
-  return(view.object)
-}
-
-setAcc <- function(view.object, newValue){
-  view.object$acc <- newValue
-  return(view.object)
-}
-
-setAccNorm <- function(view.object, newValue){
-  view.object$acc.norm <- newValue
-  return(view.object)
-}
-
 ## Read in the parameter file for a view and return a view object
 ## TODO: Add in option for view name
 ## TODO: add in SVM models
 load.parameterfile <- function(filename, delim='\t'){
   
-  param.table <- read.table(filename, sep=delim,header=F, row.names=1)
-  #print( paste('Loaded parameter file', filename) )
+  param.table <- read.table(filename, sep=delim,header=FALSE, row.names=1)
   
   # check the type and create a view object
   type <- param.table["type",1]
   if(type == "en"){
     view.object <- ElasticNet(param.file=filename,data.fn=toString(param.table["data.fn",1]))
     if("alpha" %in% rownames(param.table)){
-      view.object <- setAlpha(view.object,as.numeric(as.character(param.table["alpha",1])))
+      view.object$alpha <- as.numeric(as.character(param.table["alpha",1]))
     }
     if("measure" %in% rownames(param.table)){
-      view.object <- setMeasure(view.object,as.character(param.table["measure",1]))       
+      view.object$measure <- as.character(param.table["measure",1])
     }
     if("drop" %in% rownames(param.table)){
-      view.object <- setDrop(view.object,as.logical(param.table["drop",1]))
+      view.object$drop <- as.logical(param.table["drop",1])
     }
-    if("drop.to" %in% rownames(param.table)){
-      view.object <- setDropTo(view.object,as.numeric(as.character(param.table["drop.to",1])))
+    if("drop.to" %in% rownames(param.table)){ 
+      view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1]))
     }
     if("acc" %in% rownames(param.table)){
-      view.object <- setAcc(view.object,as.numeric(as.character(param.table["acc",1])))
+      view.object$acc <- as.numeric(as.character(param.table["acc",1]))
     }
     return(view.object)
   } # end type EN
   if(type == 'rf'){
     view.object <- RandomForest(param.file=filename,data.fn=toString(param.table["data.fn",1]))
     if("mtry" %in% rownames(param.table)){
-      view.object <- setMtry(view.object,as.numeric(as.character(param.table["mtry",1])))
+      view.object$mtry <- as.numeric(as.character(param.table["mtry",1]))
     }
     if("ntree" %in% rownames(param.table)){
-      view.object <- setNtree(view.object,as.numeric(as.character(param.table["ntree",1])))
+      view.object$ntree <- as.numeric(as.character(param.table["ntree",1]))
     }
     if("drop" %in% rownames(param.table)){
-      view.object <- setDrop(view.object,as.logical(param.table["drop",1]))
+      view.object$drop <- as.logical(param.table["drop",1])
     }
     if("drop.to" %in% rownames(param.table)){
-      view.object <- setDropTo(view.object,as.numeric(as.character(param.table["drop.to",1])))
+      view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1]))
     }
     if("acc" %in% rownames(param.table)){
-      view.object <- setAcc(view.object,as.numeric(as.character(param.table["acc",1])))
+      view.object$acc <- as.numeric(as.character(param.table["acc",1]))
     }
     
     return(view.object)
@@ -177,7 +135,6 @@ load.parameterfile <- function(filename, delim='\t'){
   }
 
   # if nothing was returned so far, send error message
-  #stop(paste0("Could not find type specified 'en' or 'rf' in parameter file ",filename))
   stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
 }
 
@@ -188,7 +145,7 @@ load.data <- function(view.object){
 }
 load.data.ElasticNet <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Elastic Net view',view.object$data.fn))
   
   # drop features
@@ -203,7 +160,7 @@ load.data.ElasticNet <- function(view.object,delim='\t'){
 }
 load.data.RandomForest <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Random Forest view',view.object$data.fn))
   
   # drop features
@@ -216,13 +173,14 @@ load.data.RandomForest <- function(view.object,delim='\t'){
   
   # set mtry parameter to sqrt(#features) if default
   if(view.object$mtry == "sqrt"){
-    view.object <- setMtry(view.object,floor(sqrt(ncol(mat))))
+    view.object$mtry <- floor(sqrt(ncol(mat)))
+    #view.object <- setMtry(view.object,floor(sqrt(ncol(mat))))
   }
   return(view.object)
 }
 load.data.SupportVectorMachine <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=T, row.names=1, check.names=F) )
+  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for SVM view',view.object$data.fn))
 
   # drop features
@@ -237,15 +195,24 @@ load.data.SupportVectorMachine <- function(view.object,delim='\t'){
 }
 
 ## load the label file
-## TODO: is this really necessary as a standalone function???
+## TODO: I updated this to return the full labels matrix, but each fxn will now need to iterate over each column
+load.label.data.old <- function(fn.labs,delim='\t'){
+  # read file
+  labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
+  # take out 'NA' values - only in cases where ALL labels are NA for a given sample
+  labs <- labs[!apply(labs,1,function(x){any(is.na(x))}),,drop=FALSE]
+  return(labs)
+}
+## load the label file
+## TODO: Keeping for now so I can run old platypus - retire it once we've added mtl
 load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
   labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
   # take out 'NA' values
-  labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=F]
-  ## TODO: should remove ignore.label samples also?
+  labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=FALSE]
   return(labs)
 }
+
 ## retrieve the two labels for training/predicting
 get.unique.labels <- function(label.vec,ignore.label){
 
@@ -272,39 +239,28 @@ get.unique.labels <- function(label.vec,ignore.label){
   return(unique.labels)
 }
 
-## find strings starting with a number and add an 'X' in the front
-# this is done to ensure consistence over all rownames and colnames for R matrices (R adds 'X' to colnames starting with a number)
-#addX <- function(vector){
-#  vector[grep("^[0-9].",vector)] <- paste0("X",vector[grep("^[0-9].",vector)])
-#  return(vector)
-#}
-
-
 ## Train one view, given a specific model type
 view.train <- function( labels, view.object ) {
   UseMethod("view.train",view.object)
 }
-view.train.ElasticNet <- function(labels, view.object ){
+view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
   
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-  #print( summary( labels[ids,1] ) ) # TODO
-  
-  # Train model
+  # Train model TODO remove library calls!?
   if(!require(glmnet)) {
     install.packages('glmnet')
     library(glmnet)
   }
-  #require(glmnet)
-  #print(paste(levels(as.factor(labels[ids,1])),table(as.factor(labels[ids,1])))) # TODO: TEMP PRINT STATEMENT
-  # TODO: make sure we have enough samples for the number of folds using - reduce folds if not at least 10 samples/fold
-  view.object$model <- cv.glmnet( view.object$data.matrix[ids,],
-                                  as.factor(labels[ids,1]), family=view.object$family, 
-                                  type.measure=view.object$measure, 
-                                  alpha=view.object$alpha 
-                                  ,nfolds=5 # TODO, shouldn't be hard coded
-                                  , keep=T)
+  # Reduce number of folds if fewer than 10 samples per fold
+  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10);print(paste('Using',nfolds,'because not enough samples')) }
+  view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
+                                  ,as.factor(labels[ids,1]), family=view.object$family
+                                  ,type.measure=view.object$measure
+                                  ,alpha=view.object$alpha 
+                                  ,nfolds=nfolds
+                                  ,keep=TRUE)
   return(view.object)
 }
 view.train.RandomForest <- function( labels, view.object  ){
@@ -312,14 +268,11 @@ view.train.RandomForest <- function( labels, view.object  ){
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-#  print( summary( labels[ids,1] ) ) # TODO
-
   # Train model
   if(!require(randomForest)) {
     install.packages('randomForest')
     library(randomForest)
   }
-  #require(randomForest)
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
                                      mtry=view.object$mtry, 
@@ -338,7 +291,6 @@ view.train.SupportVectorMachine <- function( labels, view.object  ){
     install.packages('e1071')
     library(e1071)
   }
-  #require(e1071)
   view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
                                        kernel=view.object$kernel,  
                                        cost=view.object$cost, 
@@ -358,7 +310,7 @@ view.predict.ElasticNet <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( predict(view.object$model, view.object$data.matrix[ids,,drop=F], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ? 
+    return( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ? 
   }
   
   return(as.character(c()))
@@ -368,7 +320,7 @@ view.predict.RandomForest <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=F], type='response')  ) )
+    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='response')  ) )
   }
   
   return(as.character(c()))
@@ -378,7 +330,7 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=F])  ) )
+    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
   }
 
   return(as.character(c()))
@@ -386,17 +338,16 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
 
 
 ### PLATYPUS has 2 options for label learning- either using a stacked model or our homebrew optimization function (the ensemble approach)
-platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels,join.fxn='ensemble'){
-  if(join.fxn=='ensemble') { return(platypus.predict.ensemble(view.list, majority, test.ids,weighting,unique.labels)) }
-  else if(join.fxn=='stacked') { return(platypus.predict.stacked(view.list, majority, test.ids,weighting,unique.labels,labels)) }
+platypus.predict <- function(view.list, majority, test.ids,unique.labels,labels,join.fxn='ensemble'){
+  if(join.fxn=='ensemble') { return(platypus.predict.ensemble(view.list, majority, test.ids,unique.labels)) }
+  else if(join.fxn=='stacked') { return(platypus.predict.stacked(view.list, majority, test.ids,unique.labels,labels)) }
   else {} # Only can handle ensemble/stacked learning for now TODO add error message & gracefully quit
 
 }
 
 ## 20180709 - Kiley updates to add in stacked learning
 ## Take a platypus result and predict new labels with it
-platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
-#platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels){
+platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels,labels){
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
@@ -413,8 +364,8 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,uni
   if(flag.debug) { print('platypus.predict');flush.console() }
   #  predictions is the data frame of samples (rows) by views label predictions (eg. sensitive/non-sensitive)
   ## Make per-view predictions
-  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",1:length(view.list)))) # TODO: Update 'view.' to be view names
-  for(view.i in 1:length(view.list)){
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
+  for(view.i in seq(length(view.list))){
     ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
     if(length(ids) > 0){
       predictions[ids,view.i] <- view.predict(ids,view.list[[view.i]])
@@ -508,11 +459,10 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,weighting,uni
 }
 
 ## Old platypus predict function - uses ensemble
-platypus.predict.ensemble <- function(view.list, majority, test.ids,weighting,unique.labels){
-#platypus.predict <- function(view.list, majority, test.ids,weighting,unique.labels,labels=NA){
+platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.labels){
 
-  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",1:length(view.list)))) # TODO: Update 'view.' to be view names
-  for(view.i in 1:length(view.list)){
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
+  for(view.i in seq(length(view.list))){
     ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
     if(length(ids) > 0){
       predictions[ids,view.i] <- view.predict(ids,view.list[[view.i]]) 
@@ -530,15 +480,9 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,weighting,un
   category.all[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x))<length(view.list))),,drop=FALSE])] <- "not.assessed"
   category.all[rownames(predictions[which(apply(predictions,1,function(x) table(x)[1]==length(view.list))),,drop=FALSE])] <- "agreed"
 
-  if(weighting){
-    majority.res.list <- get.majority.weighting(view.list,majority,predictions,unique.labels)
-    category.majority <- majority.res.list$category.majority
-    final <- majority.res.list$final
-  } else {
-    majority.res.list <- get.majority.counting(majority,predictions)
-    category.majority <- majority.res.list$category.majority
-    final <- majority.res.list$final
-  }
+  majority.res.list <- get.majority.weighting(view.list,majority,predictions,unique.labels)
+  category.majority <- majority.res.list$category.majority
+  final <- majority.res.list$final
 
   ## Debug only
   print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
@@ -568,7 +512,7 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,weighting,un
 ## Calculate the current accuracy of each view by looking at the originally known labels predicted during training of the view (by elastic net cv or random forest oob)
 ## The views are trained on the known and newly learned labels, to get the change in accuracy by adding new labels
 update.accuracies <- function(view.list,known.labels){
-  for(view.i in 1:length(view.list)){
+  for(view.i in seq(length(view.list))){
     view <- view.list[[view.i]]
     view <- update.accuracy(view,known.labels)
     view.list[[view.i]] <- view
@@ -582,25 +526,26 @@ update.accuracy <- function(view, known.labels){
 }
 ## method predicts on samples also used in training to avoid manual cross-validation
 ## assessment of prediction accuracy of the view is therefore highly overestimated
+## TODO: Make sure these update methods are correct
 update.accuracy.ElasticNet <- function(view, known.labels){
   
   predictions <- view.predict(rownames(known.labels),view)
-  label.tab <- merge(known.labels, as.data.frame(predictions), by.x="row.names", by.y="row.names", all=T, sort=T) 
+  label.tab <- merge(known.labels, as.data.frame(predictions), by.x="row.names", by.y="row.names", all=TRUE, sort=TRUE) 
   
   acc.list <- calculate.accuracy(label.tab,known.labels)
-  view <- setAcc(view,acc.list$b.acc)
-  view <- setAccNorm(view,normalize.accuracy.log(acc.list$b.acc))
+  view$acc <- acc.list$b.acc
+  view$acc.norm <- normalize.accuracy.log(acc.list$b.acc)
   
   return(view)
 }
 ## used oob predictions of random forest - correct estimation of model accuracy
 update.accuracy.RandomForest <- function(view, known.labels){
   oob.predictions <- view$model$predicted
-  label.tab <- merge(known.labels, as.data.frame(oob.predictions), by.x="row.names", by.y="row.names", all=T, sort=T) 
+  label.tab <- merge(known.labels, as.data.frame(oob.predictions), by.x="row.names", by.y="row.names", all=TRUE, sort=TRUE) 
   
   acc.list <- calculate.accuracy(label.tab,known.labels)
-  view <- setAcc(view,acc.list$b.acc)
-  view <- setAccNorm(view,normalize.accuracy.log(acc.list$b.acc))
+  view$acc <- acc.list$b.acc
+  view$acc.norm <- normalize.accuracy.log(acc.list$b.acc)
   
   return(view)
 }
@@ -621,22 +566,6 @@ calculate.accuracy <- function(label.tab,known.labels){
   return(list(b.acc=b.acc,acc=acc))
 }
 
-## get ensemble predictions for a majority setup - counting votes
-# TODO: Update this to work with a stacked model version
-get.majority.counting <- function(majority,predictions){
-  category.majority <- rep(NA,dim(predictions)[[1]])
-  names(category.majority) <- rownames(predictions)
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) >= majority)),,drop=FALSE])] <- "not.agreed"
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x)) < majority)),,drop=FALSE])] <- "not.assessed"
-  category.majority[rownames(predictions[which(apply(predictions,1,function(x) sort(table(x),decreasing=T)[1] >= majority)),,drop=FALSE])] <- "agreed"
-  
-  final <- rep(NA,dim(predictions)[[1]])
-  names(final) <- rownames(predictions)
-  final[names(category.majority[which(category.majority == "agreed")])] <- apply(predictions[names(category.majority[which(category.majority == "agreed")]),],1,function(x) names(sort(table(x),decreasing=T))[1])
-  
-  return(list(category.majority=category.majority,final=final))
-}
-
 ## get ensemble predictions for a majority setup - weighting votes by accuracy
 # TODO: Update this to work with a stacked model version
 get.majority.weighting <- function(view.list,majority,predictions,unique.labels){
@@ -646,10 +575,10 @@ get.majority.weighting <- function(view.list,majority,predictions,unique.labels)
   final <- rep(NA,dim(predictions)[[1]])
   names(final) <- rownames(predictions)
   
-  for(i in 1:length(category.majority)){
+  for(i in seq(length(category.majority))){
     p1 <- 0
     p2 <- 0
-    for(view.i in 1:length(view.list)){
+    for(view.i in seq(length(view.list))){
       if(!(is.na(predictions[i,view.i]))){
         if(predictions[i,view.i] == unique.labels[1]){
           p1 <- p1 + view.list[[view.i]]$acc.norm
@@ -680,34 +609,13 @@ get.majority.weighting <- function(view.list,majority,predictions,unique.labels)
   return(list(category.majority=category.majority,final=final))
 }
 
-## take single predictions for unlabeled samples and return all where view agreement meets requirements
-# count number of views agreeing in a predictions, check if thresholds are met
-# TODO: Update this to work with a stacked model version
-get.new.labels.majorityCount <- function(predictions,majority,majority.missingData){
-  
-  new.labelled <- c()
-  
-  if(majority != majority.missingData){
-    missingData.predictions <- predictions[which(apply(predictions,1,function(x) sum(table(x)) < length(view.list))),,drop=FALSE]
-    new.labelled <- missingData.predictions[which(apply(missingData.predictions,1,function(x) length(names(table(x))[table(x) >= majority.missingData])>=1)),,drop=FALSE]
-  }
-  
-  new.labelled <- rbind(new.labelled,predictions[which(apply(predictions,1,function(x) length(names(table(x))[table(x) >= majority])>=1)),,drop=FALSE])
-  
-  new.labelled[,1] <- apply(new.labelled,1,function(x) names(sort(table(x),decreasing=TRUE)[1]))
-  new.labelled <- new.labelled[,1,drop=FALSE]
-  new.labelled <- new.labelled[unique(rownames(new.labelled)),,drop=FALSE]
-  
-  return(new.labelled)
-}
-
 # weigh the predictions by accuracy of the single views
 # TODO: Update this to work with a stacked model version
 get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels){
 
   # get normalized accuracies of the views
   acc.norm <- c()
-  for(view.i in 1:length(view.list)){
+  for(view.i in seq(length(view.list))){
     acc.norm <- c(acc.norm,view.list[[view.i]]$acc.norm)
   }
   
@@ -723,15 +631,15 @@ get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels)
   max.pred.value <- max(c(p1.vec,p2.vec))
   max.preds <- cbind(predictions, p1.vec, p2.vec)
   
-  max.preds <- max.preds[which(max.preds[,"p1.vec"] >= max.pred.value | max.preds[,"p2.vec"] >= max.pred.value),,drop=F]
+  max.preds <- max.preds[which(max.preds[,"p1.vec"] >= max.pred.value | max.preds[,"p2.vec"] >= max.pred.value),,drop=FALSE]
   
   # from those, retrieve the predictions with the minimal value for a contrary prediction
   min.pred.value <- min(c(max.preds[,"p1.vec"],max.preds[,"p2.vec"]))
   
-  min.max.preds <- max.preds[which(max.preds[,"p1.vec"] <= min.pred.value | max.preds[,"p2.vec"] <= min.pred.value),,drop=F]
+  min.max.preds <- max.preds[which(max.preds[,"p1.vec"] <= min.pred.value | max.preds[,"p2.vec"] <= min.pred.value),,drop=FALSE]
   
   # return them as the new labels
-  new.labelled <- min.max.preds[,1,drop=F]
+  new.labelled <- min.max.preds[,1,drop=FALSE]
   new.labelled[which(min.max.preds[,"p1.vec"] > min.max.preds[,"p2.vec"]),1] <- unique.labels[1]
   new.labelled[which(min.max.preds[,"p2.vec"] > min.max.preds[,"p1.vec"]),1] <- unique.labels[2]
   
@@ -740,31 +648,36 @@ get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels)
   
 }
 
-
 ## normalize accuracies from [0.5,1] to [0,1] and log-transform them
+## TODO: Do I need this? Really only call it 1 time
+## TODO: I changed this, make sure it actually works
 normalize.accuracies <- function(view.list){
-  
-  for(view.i in 1:length(view.list)){
-    view <- setAccNorm(view.list[[view.i]],normalize.accuracy.log(view.list[[view.i]]$acc))
-    view.list[[view.i]] <- view
+#  sapply(view.list, function(x) {x$acc.norm <- normalize.accuracy.log(x$acc)} ) 
+  for(view.i in seq(length(view.list))){
+#    view <- setAccNorm(view.list[[view.i]],normalize.accuracy.log(view.list[[view.i]]$acc))
+#    view <- view.list[[view.i]]
+#    view$acc.norm <- normalize.accuracy.log(view$acc)
+    view.list[[view.i]]$acc.norm <- normalize.accuracy.log(view.list[[view.i]]$acc)
+#    view.list[[view.i]] <- view
   }
   
   return(view.list)
 }
 
+## ARCHIVED: no longer an option we allow
 # normalize to range [0,1]
-normalize.accuracy.linear <- function(acc){
-  # TODO: Allow for <0.5 models, just adjust to be 0.5
-  if(acc >= 0.5 & acc <= 1){
-    acc.norm <- (acc - 0.5) / (1-0.5)
-  } else{
-    stop(paste0("Accuracy value not between 0.5 and 1"))
-  }
-  return(acc.norm)
-}
+#normalize.accuracy.linear <- function(acc){
+#  # TODO: Allow for <0.5 models, just adjust to be 0.5
+#  if(acc >= 0.5 & acc <= 1){
+#    acc.norm <- (acc - 0.5) / (1-0.5)
+#  } else{
+#    stop(paste0("Accuracy value not between 0.5 and 1"))
+#  }
+#  return(acc.norm)
+#}
 # normalize to range [0,1] and log-transform
 normalize.accuracy.log <- function(acc){
-  print(acc)
+  #print(acc)
   #if(acc >= 0.5 & acc <= 1){ # TODO: Temp fix
   if(is.na(acc)) {
     stop(paste0("Non-numeric accuracy value")) #TODO: TEMP
@@ -793,20 +706,20 @@ calculate.performance <- function(predictions,labels,unique.labels){
   
   predictions <- cbind(predictions,labels, correct)
 
-  predictions.assessed <- predictions[which(predictions[,2] != "not.assessed"),,drop=F]
-  predictions.agreed <- predictions[which(predictions[,2] == "agreed"),,drop=F]
+  predictions.assessed <- predictions[which(predictions[,2] != "not.assessed"),,drop=FALSE]
+  predictions.agreed <- predictions[which(predictions[,2] == "agreed"),,drop=FALSE]
   
-  acc <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1),,drop=F])[[1]] / dim(predictions.agreed)[[1]]
+  acc <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1),,drop=FALSE])[[1]] / dim(predictions.agreed)[[1]]
   cov <- dim(predictions.agreed)[[1]] / dim(predictions.assessed)[[1]]
   
   # calculate balanced accuracy
-  if(dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[1]),,drop=F])[[1]] != 0){
-    sens <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1 & predictions.agreed[,"labels"] == unique.labels[1]),,drop=F])[[1]] / dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[1]),,drop=F])[[1]]
+  if(dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]] != 0){
+    sens <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1 & predictions.agreed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]] / dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]]
   } else{
     sens <- 0
   }
-  if(dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[2]),,drop=F])[[1]] != 0){
-    spec <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1 & predictions.agreed[,"labels",drop=F] == unique.labels[2]),,drop=F])[[1]] / dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[2]),,drop=F])[[1]]
+  if(dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[2]),,drop=FALSE])[[1]] != 0){
+    spec <- dim(predictions.agreed[which(predictions.agreed[,"correct"] == 1 & predictions.agreed[,"labels",drop=FALSE] == unique.labels[2]),,drop=FALSE])[[1]] / dim(predictions.agreed[which(predictions.agreed[,"labels"] == unique.labels[2]),,drop=FALSE])[[1]]
   } else{
     spec <- 0
   }
@@ -843,15 +756,15 @@ calculate.performance.view <- function(predictions,labels,unique.labels){
   
   predictions.assessed <- predictions[which(!(is.na(predictions[,1]))),]
   
-  acc <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1),,drop=F])[[1]] / dim(predictions.assessed)[[1]]
+  acc <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1),,drop=FALSE])[[1]] / dim(predictions.assessed)[[1]]
   # calculate balanced accuracy
-  if(dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[1]),,drop=F])[[1]] != 0){
-    sens <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1 & predictions.assessed[,"labels"] == unique.labels[1]),,drop=F])[[1]] / dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[1]),,drop=F])[[1]]
+  if(dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]] != 0){
+    sens <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1 & predictions.assessed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]] / dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[1]),,drop=FALSE])[[1]]
   } else{
     sens <- 0
   }
-  if(dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[2]),,drop=F])[[1]] != 0){
-    spec <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1 & predictions.assessed[,"labels"] == unique.labels[2]),,drop=F])[[1]] / dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[2]),,drop=F])[[1]]
+  if(dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[2]),,drop=FALSE])[[1]] != 0){
+    spec <- dim(predictions.assessed[which(predictions.assessed[,"correct"] == 1 & predictions.assessed[,"labels"] == unique.labels[2]),,drop=FALSE])[[1]] / dim(predictions.assessed[which(predictions.assessed[,"labels"] == unique.labels[2]),,drop=FALSE])[[1]]
   } else{
     spec <- 0
   }
@@ -883,11 +796,11 @@ calculate.performance.view <- function(predictions,labels,unique.labels){
 get.labelling.performance <- function(labelling.matrix,labels,unique.labels){
   
   ids <- intersect(rownames(labels),rownames(labelling.matrix))
-  labelling.matrix <- labelling.matrix[ids,,drop=F]
-  labels <- labels[ids,,drop=F]
+  labelling.matrix <- labelling.matrix[ids,,drop=FALSE]
+  labels <- labels[ids,,drop=FALSE]
   
   result.table <- c()
-  for(i in 1:dim(labelling.matrix)[[2]]){
+  for(i in seq(dim(labelling.matrix)[[2]])){
     vec <- labelling.matrix[,i] == labels[,1]
     acc <- length(vec[!(is.na(vec)) & vec==TRUE])/length(vec[!(is.na(vec))])
     cov <- length(vec[!(is.na(vec))]) / length(vec)
@@ -895,12 +808,12 @@ get.labelling.performance <- function(labelling.matrix,labels,unique.labels){
     unique.labels <- unique(labels[,1])
     acc.labels <- c()
     cov.labels <- c()
-    for(l in 1:length(unique.labels)){
-      pred.pos <- rownames(labelling.matrix[which(labelling.matrix[,i] == unique.labels[l]),,drop=F])
+    for(l in seq(length(unique.labels))){
+      pred.pos <- rownames(labelling.matrix[which(labelling.matrix[,i] == unique.labels[l]),,drop=FALSE])
       
-      is.pos <- rownames(labels[which(labels[,1] == unique.labels[l]),,drop=F])
+      is.pos <- rownames(labels[which(labels[,1] == unique.labels[l]),,drop=FALSE])
       
-      pred.na <- rownames(labelling.matrix[is.na(labelling.matrix[,i]),,drop=F])
+      pred.na <- rownames(labelling.matrix[is.na(labelling.matrix[,i]),,drop=FALSE])
       
       if(length(is.pos[!(is.pos %in% pred.na)]) != 0){
         acc.label <- length(intersect(pred.pos,is.pos))/ length(is.pos[!(is.pos %in% pred.na)])

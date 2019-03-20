@@ -54,7 +54,8 @@
 ###################
 # main function
 ###################
-llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+#llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
 #  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
 
@@ -182,12 +183,12 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
   } # end function do.one.llvfold
   
   if (parallel) {
-    llv.result.list <- foreach(k=seq(llv.folds), .export=c("platypus","drop.features","ElasticNet","RandomForest","setAlpha","setMeasure","setMtry",
-        "setNtree","setDrop","setDropTo","setAcc","setAccNorm","load.parameterfile","load.data","load.data.ElasticNet","load.data.RandomForest",
+    llv.result.list <- foreach(k=seq(llv.folds), .export=c("platypus","drop.features","ElasticNet","RandomForest",
+        "load.parameterfile","load.data","load.data.ElasticNet","load.data.RandomForest",
         "load.label.data","get.unique.labels","view.train","view.train.ElasticNet","view.train.RandomForest","view.predict","view.predict.ElasticNet",
         "view.predict.RandomForest","platypus.predict","update.accuracies","update.accuracy","update.accuracy.ElasticNet","update.accuracy.RandomForest",
-        "calculate.accuracy","get.majority.counting","get.majority.weighting","get.new.labels.majorityCount","get.new.labels.majorityWeighted","normalize.accuracies",
-        "normalize.accuracy.linear","normalize.accuracy.log","calculate.performance","calculate.performance.view","get.labelling.performance"),
+        "calculate.accuracy","get.majority.weighting","get.new.labels.majorityWeighted","normalize.accuracies",
+        "normalize.accuracy.log","calculate.performance","calculate.performance.view","get.labelling.performance"),
         .verbose=TRUE, .packages=c("glmnet","randomForest")) %dopar%
       do.one.llvfold(k = k)
   } else {
