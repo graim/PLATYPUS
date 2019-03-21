@@ -551,6 +551,7 @@ update.accuracy.RandomForest <- function(view, known.labels){
 }
 ## TODO: update.accuracy.svm function needs creation
 
+## TODO: Double check this is correct. Why is it so complicated???
 calculate.accuracy <- function(label.tab,known.labels){
   correct <- c()
   total <- c()
@@ -652,33 +653,14 @@ get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels)
 ## TODO: Do I need this? Really only call it 1 time
 ## TODO: I changed this, make sure it actually works
 normalize.accuracies <- function(view.list){
-#  sapply(view.list, function(x) {x$acc.norm <- normalize.accuracy.log(x$acc)} ) 
   for(view.i in seq(length(view.list))){
-#    view <- setAccNorm(view.list[[view.i]],normalize.accuracy.log(view.list[[view.i]]$acc))
-#    view <- view.list[[view.i]]
-#    view$acc.norm <- normalize.accuracy.log(view$acc)
     view.list[[view.i]]$acc.norm <- normalize.accuracy.log(view.list[[view.i]]$acc)
-#    view.list[[view.i]] <- view
   }
-  
   return(view.list)
 }
 
-## ARCHIVED: no longer an option we allow
-# normalize to range [0,1]
-#normalize.accuracy.linear <- function(acc){
-#  # TODO: Allow for <0.5 models, just adjust to be 0.5
-#  if(acc >= 0.5 & acc <= 1){
-#    acc.norm <- (acc - 0.5) / (1-0.5)
-#  } else{
-#    stop(paste0("Accuracy value not between 0.5 and 1"))
-#  }
-#  return(acc.norm)
-#}
 # normalize to range [0,1] and log-transform
 normalize.accuracy.log <- function(acc){
-  #print(acc)
-  #if(acc >= 0.5 & acc <= 1){ # TODO: Temp fix
   if(is.na(acc)) {
     stop(paste0("Non-numeric accuracy value")) #TODO: TEMP
   }
