@@ -41,7 +41,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     install.packages('foreach')
    library(foreach) 
   }
-  if(!require(methods)) {
+  if(!require(methods)) { # TODO: where is this used????
     install.packages('methods')
     library(methods)
   }
@@ -206,7 +206,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       , .packages=c("glmnet","randomForest")) %dopar% do.one.cvfold(k = k)
   } else {
     print("working non-parallel")
-    cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k)
+    cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k) # TODO: remove %do%, replace with an apply
   }
 
   if(flag.debug) { print('out of cv folds loop');flush.console() }

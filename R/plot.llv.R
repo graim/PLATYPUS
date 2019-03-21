@@ -14,7 +14,7 @@ plot.llv <- function(fn.labs, folder) {
   if(!file.exists(fn.labs)) { stop(paste("ERROR: Labels file does not exist:",fn.labs)) }
   if(!file.exists(folder)) { stop(paste("ERROR: Folder does not exist:",folder)) }
 
-  ## Load libraries
+  ## Load libraries TODO - is this package really necessary???
   if(!require(MASS)) {
     install.packages('MASS')
     library(MASS)
