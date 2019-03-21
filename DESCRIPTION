@@ -4,8 +4,7 @@ Title: Multiple view and task learning
 Authors@R: c(
 	person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c("aut","cre")),
 	person("Verena", "Friedl", role="aut"),
-	person("Joshua", "Stuart", role="aut")
-)
+	person("Joshua", "Stuart", role="aut"))
 License: GPL-3
 Imports:
 	glmnet,
