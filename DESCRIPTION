@@ -5,4 +5,9 @@ Authors@R: person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c
 License: GPL-3
 Imports:
 	glmnet,
-	randomForest
+	randomForest,
+	foreach,
+	doParallel,
+	methods,
+	MASS,
+	gplots
