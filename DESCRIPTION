@@ -14,3 +14,4 @@ Imports:
 	methods,
 	MASS,
 	gplots
+RoxygenNote: 6.1.1

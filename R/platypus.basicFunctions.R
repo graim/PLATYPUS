@@ -338,6 +338,19 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
 
 
 ### PLATYPUS has 2 options for label learning- either using a stacked model or our homebrew optimization function (the ensemble approach)
+## TODO: This function should also be something the user can use to make new predictions, given a set of views?
+#' Given a trained platypus model, make predictions. Generally used internally by platypus
+#'
+#' @param view.list List of views to use for predictions
+#' @param majority Confidence threshold for predictions
+#' @param test.ids Samples to be predicted
+#' @param unique.labels Class labels
+#' @param labels Labels for known samples
+#' @param join.fxn Function used to make group votes
+#'
+#' @return Matrix of predictions (One per view, overall, etc)
+#'
+#' @export
 platypus.predict <- function(view.list, majority, test.ids,unique.labels,labels,join.fxn='ensemble'){
   if(join.fxn=='ensemble') { return(platypus.predict.ensemble(view.list, majority, test.ids,unique.labels)) }
   else if(join.fxn=='stacked') { return(platypus.predict.stacked(view.list, majority, test.ids,unique.labels,labels)) }
@@ -680,6 +693,7 @@ normalize.accuracy.log <- function(acc){
 }
 
 ## calculate performance values for a prediction ( used in cv.platypus )
+## TODO: update this function
 calculate.performance <- function(predictions,labels,unique.labels){
   labels <- as.character(labels[rownames(predictions),])
   correct <- rep(0,dim(predictions)[[1]])

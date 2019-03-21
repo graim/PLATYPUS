@@ -6,7 +6,17 @@
 ##    folder              = output directory name 
 ##    plot.single.cvfolds = whether or not to plot lines for each cv fold, in addition to the genearl plots
 ################################################################
+## TODO: Shouldn't I have this take in the RData object, isntead of loading a file? That way the example can run cv.platypus then call this using the results
 
+#' Given expanded output from CV tests, generate plots showing AUC change & labels learned.
+#'
+#' @param fn.labs File containing outcome labels
+#' @param folder Output directory where results will be written and cv.platypus results already are
+#' @param plot.single.cvfolds Whether or not to plot lines for each cv fold, in addition to the general line plot
+#'
+#' @return Nothing. Plots are printed to file in user-provided folder
+#'
+#' @export
 plot.cv <- function(fn.labs, folder, plot.single.cvfolds=FALSE) {
 
   ## Check arguments exist

@@ -30,15 +30,16 @@ write.config.rf <- function(x,v,fn.config='config_TEST.txt') {
   write(paste('acc',x$accuracy, sep='\t'), file=fn.config, append=TRUE)
 }
 
-
-##  Generate config files for platypus
-##  Input:
-#     view.names - list of filenames containing data
-#     fn.tasks   - filename containing all task data (rows=samples, cols=tasks)
-#     config.loc - where the config files should be stored
-#     model.type - type of classifier to use
-#     
-# TODO: mtry is usually based on nsamples, don't have that loaded yet
+#' Generate configuration files for platypus
+#'
+#' @param view.names List of files containing view feature data
+#' @param fn.tasks File containing all task labels, one column per task
+#' @param config.loc Where the config files should be stored
+#' @param model.type Type of classifier to use
+#'
+#' @return List of config filenames, for use in platypus
+#'
+#' @export
 gen.config <- function(view.names, fn.tasks, config.loc='config', model.type=c('en','rf','svm'), delim=',', delim.v='\t', n.iters=100, ignore.label='intermediate', nfolds=10, mtry=NA, ntree=c(500,1000,1500,2000)) {
 
   ## For each task - load the task

@@ -7,7 +7,16 @@
 ##    fn.labs  = filename of the outcome labels
 ##    folder   = output directory name 
 ################################################################
+## TODO: Shouldn't I have this take in the RData objects, isntead of loading a file? That way the example can run cv.platypus then call this using the results
 
+#' Given expanded output from CV and LLV tests, generate a label learning matrix and plot results
+#'
+#' @param fn.labs File containing outcome labels
+#' @param folder Output directory where results will be written and cv.platypus results already are
+#'
+#' @return Nothing. Plots are printed to file in user-provided folder
+#'
+#' @export
 plot.llv <- function(fn.labs, folder) {
 
   ## Check arguments exist
