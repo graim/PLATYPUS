@@ -9,6 +9,29 @@
 ## Optional Inputs:
 #   alpha = values of alpha to test
 #   iterations = number of iterations per alpha to run the test
+
+# TODO: viewName isn't implemented yet. Seems like it's not necessary in this function anyway
+#' Grid search of parameters for an elastic net model using data X and labels y.
+#'
+#' @param X Feature matrix (sample per row)
+#' @param y Named vector of labels
+#' @param alpha Values of alpha to test
+#' @param iterations Number of iterations per alpha to run the test
+#' @param nfolds Number of folds to use
+#' @param measure Model performance measure to use. Default AUC.
+#' @param viewName Currently not in use, will be name of the view created from this.
+#' @param ignore.label Label type to be excluded (samples with this label will not be used in training).
+#'
+#' @return list containing alpha and accuracy (or whichever measure selected) for best model.
+#'
+#' @examples
+#' X <- matrix(rnorm(1000), nrow=100)
+#' y <- c(rep('MOO',50),rep('OINK',50))
+#' names(y) <- paste0('Sample',seq(nrow(X)))
+#' rownames(X) <- paste0('Sample',seq(nrow(X)))
+#' res <- single.elasticNet.predictor(X,y)
+#'
+#' @export
 single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10,nfolds=10, measure='auc', viewName='', ignore.label='intermediate') {
 
   ## Remove unlabeled samples and those with missing data
@@ -57,6 +80,26 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
 #   accuracy 
 #   mtry 
 #   ntree
+#' Grid search of parameters for a random forest model using data X and labels y.
+#' @param X Feature matrix (sample per row)
+#' @param y Named vector of labels
+#' @param mtry Number of predictors samples for splitting at each node
+#' @param ntree Number of trees grown
+#' @param iterations Number of iterations per alpha to run the test
+#' @param nfolds Number of folds to use
+#' @param measure Model performance measure to use. Defaults to accuracy.
+#' @param ignore.label Label type to be excluded (samples with this label will not be used in training).
+#'
+#' @return list containing mtry, ntree, and accuracy (or whichever measure selected) for best model.
+#'
+#' @examples
+#' X <- matrix(rnorm(1000), nrow=100)
+#' y <- c(rep('MOO',50),rep('OINK',50))
+#' names(y) <- paste0('Sample',seq(nrow(X)))
+#' rownames(X) <- paste0('Sample',seq(nrow(X)))
+#' res <- single.randomForest.predictor(X,y)
+#'
+#' @export
 single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2000)){
   # Intersect IDs in labels and in the feature data
   ids <- intersect(names(y),rownames(X))
