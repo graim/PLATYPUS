@@ -1,5 +1,5 @@
-Package: platypus
-Title: PLATYPUS multiview-multitask learning framework
+Package: PLATYPUS
+Title: PLATYPUS multiview multitask learning framework
 Version: 0.0.1.1000
 Authors@R: c( 
     person(given = "Kiley",
@@ -15,12 +15,13 @@ Authors@R: c(
            role = "aut",
            email = "kgraim@flatironinstitute.org")
 )
-Description: A semi-supervised approach to multiple view and task learning.
+Description: A semi supervised approach to multiple view and task learning.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: glmnet, 
+Imports:
+	glmnet, 
 	randomForest,
 	e1071,
 	parallel,
