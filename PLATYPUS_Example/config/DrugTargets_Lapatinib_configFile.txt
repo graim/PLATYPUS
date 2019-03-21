@@ -1,4 +1,4 @@
-data.fn	data_CCLE/2015-06-20_DrugTargetsExpression.txt
+data.fn	data/2015-06-20_DrugTargetsExpression.txt
 type	rf
 mtry	10
 ntree	500
