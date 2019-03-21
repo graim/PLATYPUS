@@ -3,3 +3,6 @@ Version: 0.1
 Title: Multiple view and task learning
 Authors@R: person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c("aut","cre"))
 License: GPL-3
+Imports:
+	glmnet,
+	randomForest
