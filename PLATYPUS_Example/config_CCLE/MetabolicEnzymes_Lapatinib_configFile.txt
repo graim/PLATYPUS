@@ -1,6 +1,0 @@
-data.fn	data_CCLE/2015-07-02_TissueByMetabolicEnzymeExpression.txt
-type	rf
-mtry	9
-ntree	1000
-drop	F
-acc	0.761449579831933

@@ -1,4 +1,4 @@
-data.fn	./data/2015-09-08_DrugTargetNearestNeighboursPathway_HallmarkAllExpression.txt
+data.fn	data_CCLE/2015-09-08_DrugTargetNearestNeighboursPathway_HallmarkAllExpression.txt
 type	rf
 mtry	22
 ntree	2000
