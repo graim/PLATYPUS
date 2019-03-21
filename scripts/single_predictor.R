@@ -64,7 +64,7 @@ single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2
   y   <- as.factor(y[ids])
 
   # set up mtry if not specified by function call
-  if(is.na(mtry)) { mtry <- seq(max(floor(ncol(X)/3), 1)) } # TODO suppress warnings - don't care if mtry was specified as a list
+  if(any(is.na(mtry))) { mtry <- seq(max(floor(ncol(X)/3), 1)) } # TODO suppress warnings - don't care if mtry was specified as a list
 
   ## Grid sweep parameters, make lots of models
   # Results matrix

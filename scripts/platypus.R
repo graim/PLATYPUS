@@ -120,6 +120,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     
     ## Quit if there aren't any unlabelled IDs left
     if (length(ids.unlabelled) <= 0) { 
+      print('No new labels to learn, stopping label learning.')
       break 
     }
 
@@ -156,6 +157,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     
     # Quit, if the maximal prediction value reached is lower than the given threshold
     if(new.labelled.list$weighting.threshold.upper < weighting.threshold){
+      print('No longer learning new labels, stopping label learning.')
       break
     } else{
       new.labelled <- new.labelled.list$new.labelled
@@ -170,7 +172,11 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     new.labels <- rbind(new.labels, new.labelled)
     if(flag.debug) {print( paste('Number labeled samples', length(ids.labelled)) ) }
 
-    ## TODO: If only 1 class in labels list, quit with a warning
+    ## TODO: If only 1 class in labels list, quit with a warning UNTESTED
+    if(now(table(labels))!=2) { 
+      print('No longer 2 classes, stopping iterations.')
+      break
+    }
 
     ## Remove newly found labels from unlabelled IDs
     ids.unlabelled <- ids.unlabelled[!(ids.unlabelled %in% rownames(labels))]
