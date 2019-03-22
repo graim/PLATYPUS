@@ -54,7 +54,7 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
       nfolds <- floor(nrow(X)/10)
       print(paste('Too few samples, using',nfolds,'instead.'))
     }
-    res <- cv.glmnet(as.matrix(X),y,family="binomial",type.measure="auc", alpha=res.all[i,'alpha'], nfolds=nfolds) 
+    res <- glmnet::cv.glmnet(as.matrix(X),y,family="binomial",type.measure="auc", alpha=res.all[i,'alpha'], nfolds=nfolds) 
     res.all[i,'error'] <- res$cvsd[ res$glmnet.fit$lambda == res$lambda.min ]
     res.all[i,'accuracy'] <- res$cvm[res$glmnet.fit$lambda == res$lambda.min]
     res.all[i,'lambda'] <- res$lambda.min
@@ -116,7 +116,7 @@ single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2
 
   # Iterate over each parameter set
   # Train models
-  randomForest.model <- apply(params, 1, function(x) { randomForest(X,y,mtry=x[1],ntry=x[2]) } )
+  randomForest.model <- apply(params, 1, function(x) { randomForest::randomForest(X,y,mtry=x[1],ntry=x[2]) } )
 
   ## Calculate acc for each parameter set
   # acc = (TP + TN) / (P + N)
