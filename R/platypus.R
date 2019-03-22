@@ -1,49 +1,33 @@
-## The standard platypus function
-##
-## Created: Dec 2014, Kiley Graim
-##    Updated: September 2015, Verena Friedl
-##    Updated: March 2016, Kiley Graim
-##    Updated: June 2016, Kiley Graim
-##    Updated: Feb 2017, Kiley Graim
-##    Updated: Jan 2018, Kiley Graim
-##    Last Updated: Aug 2018, Kiley Graim 
-## Check github for dates of latest updates
-
-# pseudo-code:
-#     for (v in views)
-#       load v
-#     load labels
-#
-#     while( not converged on labels OR no changes anymore )
-#       for( v in views )
-#         train v on labelled data
-#         predict unlabelled data
-#       check for instances where predictions agree -> new labels
-#       add newly found labels to labelled data
-#  
-
-
-
-
-
-################################################################################
-###  Main Function  #########################################################
-################################################################################
-
-# call platypus.R
-# first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
-# pass the filepath of a parameter-file for each view
-# [OPTIONS] <filename_labs> [-c <class_col>] for each view(<filename_viewfile>) 
-# OPTIONS:
-# -i <maximal number of iterations for each platypus run, eg. 100, default=100>
-# -m <majority threshold in percent, eg. 75, default=100>
-# -u flag for updating the accuracies of the single views in each iteration, default=FALSE
-# -e flag for expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
-# -b <class_name> flag for excluding cell lines that fall into class 'class_name' for the binary drug response definition, default='intermediate'
-
-
-# fn.labs: labels file
-# fn.views: list of parameter files
+#' platypus multiview learning
+#'
+#' The standard platypus function for multiview learning
+#' first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
+#' pass the filepath of a parameter-file for each view
+#' @param fn.views List of view files
+#' @param fn.labs File containing outcome labels
+#' @param i Maximal number of iterations for each platypus run, default=100
+#' @param m Percent agreement required to learn a sample's class label, default=100
+#' @param w flag for weighting the preditions by accuracy, default=FALSE # TODO REMOVE
+#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
+#' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
+#' @param b Label class to ignore, if any. Defaults to 'intermediate'
+#' @return final.result.list
+#' @keywords platypus
+#' @export
+#' @examples
+#' platypus(fn.labs, fn.views, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
+#' platypus(fn.labs, fn.views)
+#' \code{pseudo-code:
+#'     for (v in views)
+#'       load v
+#'     load labels
+#'
+#'     while( not converged on labels OR no changes anymore )
+#'       for( v in views )
+#'         train v on labelled data
+#'         predict unlabelled data
+#'       check for instances where predictions agree -> new labels
+#'       add newly found labels to labelled data }
 platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
