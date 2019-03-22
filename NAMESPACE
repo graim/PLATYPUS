@@ -2,7 +2,9 @@
 
 S3method(plot,cv)
 S3method(plot,llv)
+export(cv.platypus)
 export(gen.config)
+export(llv.platypus)
 export(platypus)
 export(platypus.predict)
 export(single.elasticNet.predictor)

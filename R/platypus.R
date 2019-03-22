@@ -1,3 +1,15 @@
+# pseudo-code:
+#     for (v in views)
+#       load v
+#     load labels
+#
+#     while( not converged on labels OR no changes anymore )
+#       for( v in views )
+#         train v on labelled data
+#         predict unlabelled data
+#       check for instances where predictions agree -> new labels
+#       add newly found labels to labelled data 
+
 #' platypus multiview learning
 #'
 #' The standard platypus function for multiview learning
@@ -17,17 +29,6 @@
 #' @examples
 #' platypus(fn.labs, fn.views, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
 #' platypus(fn.labs, fn.views)
-#' \code{pseudo-code:
-#'     for (v in views)
-#'       load v
-#'     load labels
-#'
-#'     while( not converged on labels OR no changes anymore )
-#'       for( v in views )
-#'         train v on labelled data
-#'         predict unlabelled data
-#'       check for instances where predictions agree -> new labels
-#'       add newly found labels to labelled data }
 platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 

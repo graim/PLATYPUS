@@ -1,80 +1,59 @@
-## Functions for the MVL framework - label learning validation
-##
-## Created: July 2015, Verena Friedl
-##    Updated Sept 2015, Verena Friedl
-##    Updated: April 2016, Kiley Graim
-##    Updated: Feb 2017, Kiley Graim
-##    Updated: Jan 2018, Kiley Graim
-## Latest updates tracked in github
-
-# pseudo-code:
-#
-#     for (v in views)
-#       load v
-#     load labels
-#
-#     divide labelled data in folds
-#     for(f in folds):
-#       unlabelled.data <- fold f
-#       delete f from labels
-#       while( not converged on labels OR no changes anymore )
-#         for( v in views )
-#           train v on all sets but f
-#           try to predict fold f
-#         add newly found labels to training data
-#         calculate performance for added labels
-#       calculate overall performance for a fold
-#     average performance over folds
-#       
+#' pseudocode:
+#'     for (v in views)
+#'       load v
+#'     load labels
+#'
+#'     divide labelled data in folds
+#'     for(f in folds):
+#'       unlabelled.data <- fold f
+#'       delete f from labels
+#'       while( not converged on labels OR no changes anymore )
+#'         for( v in views )
+#'           train v on all sets but f
+#'           try to predict fold f
+#'         add newly found labels to training data
+#'         calculate performance for added labels
+#'       calculate overall performance for a fold
+#'     average performance over folds
 
 
-
-################################################################################
-###  Main Function  #########################################################
-################################################################################
-
-# call llv.platypus.R
-# first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
-# pass the filepath of a parameter-file for each view
-# [OPTIONS] <filename_labs> [-c <class_col>] for each view(<filename_viewfile>) 
-# OPTIONS:
-# -k <number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10>
-# -i <maximal number of iterations for each platypus run, eg. 100, default=100>
-# -m <majority threshold in percent, eg. 75, default=100>
-# -w flag for weighting the preditions by accuracy, default=TRUE # TODO removing 
-# -u flag for updating the accuracies of the single views in each iteration, default=FALSE
-# -e flag for expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
-# -b <class_name> flag for excluding cell lines that fall into class 'class_name' for the binary drug response definition, default='intermediate'
-# -o <output folder>: folder to save output to, default=~/
-# -p <num of cores>: give the number of cores to use and turn on parallelization
-
-
-
-
-###################
-# main function
-###################
+#' Label learning validation
+#'
+#' Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
+#' @param fn.views List of view files
+#' @param fn.labs File containing outcome labels
+#' @param k number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
+#' @param i Maximal number of iterations for each platypus run, default=100
+#' @param m Percent agreement required to learn a sample's class label, default=100
+#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
+#' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
+#' @param b Label class to ignore, if any. Defaults to 'intermediate'
+#' @param o Name of the folder where output is stored.
+#' @param p The number of cores to use. Enables parallelization.
+#' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
+#' @keywords platypus
+#' @export 
+#' @examples
+#' TODO show how to generate config.files and fn.labs
+#' llv.platypus(config.files,fn.labs)
+#' llv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
 llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
-#llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,weighting=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
-#  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
-#  source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
-
   
   ## Set debug flag on/off for testing - currently we don't use this
   flag.debug <- TRUE
   #flag.debug <- FALSE
   if(flag.debug) { print('Debug is on');flush.console() }
 
+  ## TODO: Don't load libraries this way :)
   require(foreach)
   require(methods)
-  print(paste('Ignoring:',ignore.label))
-
-  
   if(parallel) {
     require(doParallel)
     cl <- makeCluster(num.cores,outfile="")
     registerDoParallel(cl, cores = num.cores)
   }
+
+  print(paste('Ignoring labels for samples labelled:',ignore.label))
 
   ## Create output directory if it doesn't already exist TODO untested
   if(!dir.exists(output.folder)) { dir.create(output.folder) }
@@ -192,8 +171,8 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
         .verbose=TRUE, .packages=c("glmnet","randomForest")) %dopar%
       do.one.llvfold(k = k)
   } else {
-    llv.result.list <- foreach(k=seq(llv.folds)) %do%
-      do.one.llvfold(k = k)
+    llv.result.list <- lapply(seq(llv.folds), do.one.llvfold)
+    #llv.result.list <- foreach(k=seq(llv.folds)) %do% do.one.llvfold(k = k)  # Old but saving it for now
   }  
   
   ## Get output together

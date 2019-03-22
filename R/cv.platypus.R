@@ -1,34 +1,35 @@
-## k-fold cross validation of platypus
 # Pseudocode:
 #     get platypus parameters and view information
-#     load labelled data    
+#     load labelled data
 #     divide labelled data in k subsets
 #     for fold.i in 1:k
 #       hold out subset fold.i of labelled data
 #       train platypus.R on all-but-fold.i labelled (and unlabelled) data with the given views   # unlabelled data is optional, but making use of unlabelled data is one of the biggest advantages of platypus
 #       predict fold.i subset on trained platypus views
-#
-# call cv.platypus.R
-# first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
-# pass the filepath of a parameter-file for each view
-# [OPTIONS] <filename_labs> [-c <class_col>] for each view(<filename_viewfile>) 
-# OPTIONS:
-# -k <number of folds for cross validation, eg. 5, default=10>
-# -i <number of iterations, eg. 100, default=100>
-# -m <majority threshold in percent, eg. 75, default=100>
-# -u flag for updating the accuracies of the single views in each iteration, default=FALSE
-# -e flag for expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
-# -b <class_name> flag for excluding sample labels that fall into class 'class_name', default='intermediate'
-# -o <output folder>: folder to save output to, default=~/
-# -p <num of cores>: give the number of cores to use and turn on parallelization
 
 
+
+#' k-fold cross validation for platypus
+#'
+#' @param fn.views List of view files
+#' @param fn.labs File containing outcome labels
+#' @param k number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
+#' @param i Maximal number of iterations for each platypus run, default=100
+#' @param m Percent agreement required to learn a sample's class label, default=100
+#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
+#' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
+#' @param b Label class to ignore, if any. Defaults to 'intermediate'
+#' @param o Name of the folder where output is stored.
+#' @param p The number of cores to use. Enables parallelization.
+#' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
+#' @keywords platypus
+#' @export
+#' @examples
+#' TODO show how to generate config.files and fn.labs
+#' cv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
+#' cv.platypus(config.files,fn.labs)
 cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
  
-  ## Load required functions 
-  #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.R'))
-  #source(paste0(Sys.getenv("HOME"),'/MVL/scripts/platypus.basicFunctions.R'))
-
   ## Set debug flag on/off for testing
   flag.debug <- TRUE
   #flag.debug <- FALSE
@@ -206,7 +207,8 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
       , .packages=c("glmnet","randomForest")) %dopar% do.one.cvfold(k = k)
   } else {
     print("working non-parallel")
-    cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k) # TODO: remove %do%, replace with an apply
+    cv.result.list <- lapply(seq(cv.folds), do.one.cvfold)
+    #cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k) # Old but saving it for now
   }
 
   if(flag.debug) { print('out of cv folds loop');flush.console() }
