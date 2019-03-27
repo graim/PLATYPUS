@@ -10,7 +10,6 @@
 #   alpha = values of alpha to test
 #   iterations = number of iterations per alpha to run the test
 
-# TODO: viewName isn't implemented yet. Seems like it's not necessary in this function anyway
 #' Grid search of parameters for an elastic net model using data X and labels y.
 #'
 #' @param X Feature matrix (sample per row)
@@ -19,7 +18,6 @@
 #' @param iterations Number of iterations per alpha to run the test
 #' @param nfolds Number of folds to use
 #' @param measure Model performance measure to use. Default AUC.
-#' @param viewName Currently not in use, will be name of the view created from this.
 #' @param ignore.label Label type to be excluded (samples with this label will not be used in training).
 #'
 #' @return list containing alpha and accuracy (or whichever measure selected) for best model.
@@ -32,7 +30,7 @@
 #' res <- single.elasticNet.predictor(X,y)
 #'
 #' @export
-single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10,nfolds=10, measure='auc', viewName='', ignore.label='intermediate') {
+single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10,nfolds=10, measure='auc', ignore.label='intermediate') {
 
   ## Remove unlabeled samples and those with missing data
   ## Drop to set of samples in both labels and features data
@@ -52,7 +50,7 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
     if(nrow(X)/nfolds < 10) {
       #print(table(y))
       nfolds <- floor(nrow(X)/10)
-      print(paste('Too few samples, using',nfolds,'instead.'))
+      message(paste('Too few samples, using',nfolds,'folds instead.'))
     }
     res <- glmnet::cv.glmnet(as.matrix(X),y,family="binomial",type.measure="auc", alpha=res.all[i,'alpha'], nfolds=nfolds) 
     res.all[i,'error'] <- res$cvsd[ res$glmnet.fit$lambda == res$lambda.min ]
@@ -107,7 +105,10 @@ single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2
   y   <- as.factor(y[ids])
 
   # set up mtry if not specified by function call
-  if(any(is.na(mtry))) { mtry <- seq(max(floor(ncol(X)/3), 1)) } # TODO suppress warnings - don't care if mtry was specified as a list
+  if((is.na(mtry))) { 
+    mtry <- seq(max(floor(ncol(X)/3), 1)) 
+    message( paste('mtry is not provided or contains an NA value, using',toString(mtry)) )
+  }
 
   ## Grid sweep parameters, make lots of models
   # Results matrix
