@@ -40,7 +40,7 @@ write.config.rf <- function(x,v,fn.config='config_TEST.txt') {
 #' @return List of config filenames, for use in platypus
 #'
 #' @export
-gen.config <- function(view.names, fn.tasks, config.loc='config', model.type=c('en','rf','svm'), delim=',', delim.v='\t', n.iters=100, ignore.label='intermediate', nfolds=10, mtry=NA, ntree=c(500,1000,1500,2000)) {
+gen.config <- function(view.names, fn.tasks, config.loc='config', model.type=c('en','rf','svm'), delim=',', delim.v='\t', n.iters=10, ignore.label='intermediate', nfolds=10, mtry=NA, ntree=c(500,1000,1500,2000)) {
 
   ## For each task - load the task
   ##   For each view - load the view
