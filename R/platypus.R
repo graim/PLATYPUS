@@ -15,7 +15,7 @@
 #' The standard platypus function for multiview learning
 #' first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
 #' pass the filepath of a parameter-file for each view
-#' @param fn.views List of view files
+#' @param view.list List of view objects
 #' @param fn.labs File containing outcome labels
 #' @param i Maximal number of iterations for each platypus run, default=100
 #' @param m Percent agreement required to learn a sample's class label, default=100
@@ -27,9 +27,9 @@
 #' @keywords platypus
 #' @export
 #' @examples
-#' platypus(fn.labs, fn.views, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
-#' platypus(fn.labs, fn.views)
-platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
+#' platypus(fn.labs, view.list, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
+#' platypus(fn.labs, view.list)
+platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
@@ -42,7 +42,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
   classcol.labs <- 1 # The column containing the output labels. Often is the first column, not including rownames
   
   ## Create view from each parameter file and store in a list of views 
-  view.list <- lapply(fn.views, load.parameterfile )
+  #view.list <- lapply(fn.views, load.parameterfile ) # moved this outside platypus so it takes in already loaded view list
 
   ## Load the data for labs and each view
   labs <- load.label.data(fn.labs,classcol.labs)
@@ -50,7 +50,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
 
   # Get the the two labels
   unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
-  view.list <- lapply(view.list, load.data)
+  #view.list <- lapply(view.list, load.data) # moved this outside platypus so it takes in already loaded view list
   if(flag.debug) { print(lapply(view.list, function(x){length(intersect(labs,rownames(x)))} ));flush.console()  } 
 
   ## Take all IDs for each data type
@@ -158,7 +158,7 @@ platypus <- function(fn.labs, fn.views, ignore.label='intermediate', i=100, m=10
     if(flag.debug) {print( paste('Number labeled samples', length(ids.labelled)) ) }
 
     ## TODO: If only 1 class in labels list, quit with a warning UNTESTED
-    if(now(table(labels))!=2) { 
+    if(nrow(table(labels))!=2) { 
       print('No longer 2 classes, stopping iterations.')
       break
     }

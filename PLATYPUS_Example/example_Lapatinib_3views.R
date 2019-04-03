@@ -8,6 +8,7 @@
 ## Load libraries
 library(devtools)
 install_github('graim/PLATYPUS')
+install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/") 
 library(PLATYPUS)
 
 ## Baseline view data: TODO 
@@ -56,27 +57,33 @@ config.files    <- c(config.files.en, config.files.rf)
 config.files <- list('DrugTargets_Lapatinib_configFile.txt','DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt','MetabolicEnzymes_Lapatinib_configFile.txt')
 config.files <- file.path('config', config.files)
 
+## Create view from each parameter file and store in a list of views 
+view.list <- lapply(config.files, load.parameterfile ) 
+view.list <- lapply(view.list, load.data)
+
+
+
 print('Views in use:'); flush.console()
 print(config.files)
 
 ## Set parameters
-n.iters  <- 10                                             # Run for this many iterations of label learning
+n.iters  <- 2                                             # Run for this many iterations of label learning
 m.thresh <- 95                                             # Threshold for learning a label (0-1 range)
 of.name  <- 'platypus_output'                         # Directory where results should be stored
 fn.labs  <- 'CCLE_responselabel_binary_3cat_Lapatinib.tab' # Filename of the labels being predicted
 
 ## Call multiview learning function
 print('Running platypus')
-platypus.res <- platypus(fn.views=config.files,fn.labs=fn.labs,e=TRUE,i=n.iters,m=m.thresh)
+platypus.res <- platypus(view.list=view.list,fn.labs=fn.labs,e=TRUE,i=n.iters,m=m.thresh)
 ## TODO: Add a couple of lines highlighting how to use this
 
 ## Call label learning validation (LLV)
 print('Running llv')
-llv.platypus.res <- llv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name)
+llv.platypus.res <- llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name)
  
 ## Call cross validation (CV)
 print('Running cv')
-cv.platypus.res <- cv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
+cv.platypus.res <- cv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
 
 ## After running LLV and CV, generate the PLATYPUS performance plots
 ## TODO: R reads these as plot() functions for data types llv and cv. Would like to update my code to make that work!

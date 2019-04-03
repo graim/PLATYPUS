@@ -20,7 +20,7 @@
 #' Label learning validation
 #'
 #' Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
-#' @param fn.views List of view files
+#' @param view.list List of view objects 
 #' @param fn.labs File containing outcome labels
 #' @param k number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
 #' @param i Maximal number of iterations for each platypus run, default=100
@@ -36,8 +36,8 @@
 #' @examples
 #' TODO show how to generate config.files and fn.labs
 #' llv.platypus(config.files,fn.labs)
-#' llv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
-llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+#' llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
+llv.platypus <- function(view.list,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
   
   ## Set debug flag on/off for testing - currently we don't use this
   flag.debug <- TRUE
@@ -90,7 +90,7 @@ llv.platypus <- function(fn.views,fn.labs,llv.folds=10,no.iterations=100,majorit
     write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
     
     # get platypus result list
-    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
     
     ## Calculate final ll-performance
     # get rid of unused iterations

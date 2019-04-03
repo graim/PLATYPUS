@@ -11,7 +11,7 @@
 
 #' k-fold cross validation for platypus
 #'
-#' @param fn.views List of view files
+#' @param view.list List of view objects 
 #' @param fn.labs File containing outcome labels
 #' @param k number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
 #' @param i Maximal number of iterations for each platypus run, default=100
@@ -26,9 +26,9 @@
 #' @export
 #' @examples
 #' TODO show how to generate config.files and fn.labs
-#' cv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
+#' cv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
 #' cv.platypus(config.files,fn.labs)
-cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
+cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
  
   ## Set debug flag on/off for testing
   flag.debug <- TRUE
@@ -102,7 +102,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     if(flag.debug) { print(table(labs.reduced));flush.console() }
  
     # get platypus result list
-    platypus.result <- platypus(fn.views=fn.views, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
  
     # TODO: THIS NEXT CODE BLOCK IS THE BROKEN BIT FOR SSC EXAMPLE
     # Error in na.fail.default(list(labels = c(`11031.p1` = 1L, `11033.p1` = 2L,  : 
@@ -222,7 +222,7 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
   }
   
   colnames(accuracy.cvfolds) <- c("cv.fold","accuracy.all.agree","balanced.accuracy.all.agree","coverage.all.agree","accuracy.majority.agree","balanced.accuracy.majority.agree","coverage.majority.agree"
-                                  ,paste0("accuracy.view.",seq(length(fn.views))),paste0("balanced.accuracy.view.",seq(length(fn.views))))
+                                  ,paste0("accuracy.view.",seq(length(view.list))),paste0("balanced.accuracy.view.",seq(length(view.list))))
 
   if(flag.debug) { print('collected cv iteration performances');flush.console() }
 
@@ -245,12 +245,12 @@ cv.platypus <- function(fn.views,fn.labs,classcol.labs=1,cv.folds=10,no.iteratio
     }
     
       colnames(accuracy.platypus.iterations) <- c("cv.fold","iteration","weighting.threshold.upper","weighting.threshold.lower","weighting.threshold"
-                                             ,paste0("weighting.view.",seq(length(fn.views))),paste0("weighting.norm.view.",seq(length(fn.views)))
+                                             ,paste0("weighting.view.",seq(length(view.list))),paste0("weighting.norm.view.",seq(length(view.list)))
                                              ,"no.ids.labelled","no.ids.unlabelled"
                                              ,"no.new.labelled", "no.ids.left.unlabelled"
                                              ,"accuracy.all.agree","balanced.accuracy.all.agree","coverage.all.agree"
                                              ,"accuracy.majority.agree","balanced.accuracy.majority.agree","coverage.majority.agree"
-                                             ,paste0("accuracy.view.",seq(length(fn.views))),paste0("balanced.accuracy.view.",seq(length(fn.views))))
+                                             ,paste0("accuracy.view.",seq(length(view.list))),paste0("balanced.accuracy.view.",seq(length(view.list))))
 
     if(flag.debug) { print('Renamed the results');flush.console() }
     if(!is.na(output.folder)) { 
