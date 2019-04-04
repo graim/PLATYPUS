@@ -140,6 +140,7 @@ load.parameterfile <- function(filename, delim='\t'){
 
 
 ## load the feature matrix from file to a matrix object
+## TODO: Do we really need these fxns??
 load.data <- function(view.object){
   UseMethod("load.data",view.object)
 }
@@ -216,7 +217,7 @@ load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
 ## retrieve the two labels for training/predicting
 get.unique.labels <- function(label.vec,ignore.label){
 
-  print(paste('ignoring',ignore.label));flush.console()
+  #print(paste('ignoring',ignore.label));flush.console()
   ## Get the the two labels
   unique.labels <- unique(label.vec)
   
@@ -230,7 +231,7 @@ get.unique.labels <- function(label.vec,ignore.label){
   }
 
   unique.labels <- as.vector(sort(unique.labels))
-  print(unique.labels);flush.console()
+  #print(unique.labels);flush.console()
   
   # MVL classification for 2 labels
   if(length(unique.labels) != 2){
@@ -473,6 +474,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
 
 ## Old platypus predict function - uses ensemble
 platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.labels){
+  flag.debug <- FALSE
 
   predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
   for(view.i in seq(length(view.list))){
@@ -498,23 +500,25 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.label
   final <- majority.res.list$final
 
   ## Debug only
-  print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
-  print(length(test.ids));flush.console()
-  print(dim(predictions));flush.console()
-  print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
-  print(length(category.all));flush.console()
-  print(length(category.majority));flush.console()
-
-  print('TEST.IDS:');flush.console()
-  print(head(test.ids));flush.console()
-  print('PREDICTIONS:');flush.console()
-  print(head(predictions));flush.console()
-  print('FINAL:');flush.console()
-  print(head(final));flush.console()
-  print('CATEGORY.ALL:');flush.console()
-  print(head(category.all));flush.console()
-  print('CATEGORY.MAJORITY:');flush.console()
-  print(head(category.majority));flush.console()
+  if(flag.debug) {
+    print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
+    print(length(test.ids));flush.console()
+    print(dim(predictions));flush.console()
+    print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
+    print(length(category.all));flush.console()
+    print(length(category.majority));flush.console()
+  
+    print('TEST.IDS:');flush.console()
+    print(head(test.ids));flush.console()
+    print('PREDICTIONS:');flush.console()
+    print(head(predictions));flush.console()
+    print('FINAL:');flush.console()
+    print(head(final));flush.console()
+    print('CATEGORY.ALL:');flush.console()
+    print(head(category.all));flush.console()
+    print('CATEGORY.MAJORITY:');flush.console()
+    print(head(category.majority));flush.console()
+  }
 
   predictions <- cbind(predictions,final,category.all,category.majority)
   return(predictions)

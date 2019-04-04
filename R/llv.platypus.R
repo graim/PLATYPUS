@@ -40,8 +40,8 @@
 llv.platypus <- function(view.list,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
   
   ## Set debug flag on/off for testing - currently we don't use this
-  flag.debug <- TRUE
-  #flag.debug <- FALSE
+  #flag.debug <- TRUE
+  flag.debug <- FALSE
   if(flag.debug) { print('Debug is on');flush.console() }
 
   ## TODO: Don't load libraries this way :)

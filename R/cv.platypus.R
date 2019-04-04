@@ -31,8 +31,8 @@
 cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
  
   ## Set debug flag on/off for testing
-  flag.debug <- TRUE
-  #flag.debug <- FALSE
+  #flag.debug <- TRUE
+  flag.debug <- FALSE
   if(flag.debug) { print('Debug is on');flush.console() }
 
 
