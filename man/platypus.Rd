@@ -4,14 +4,14 @@
 \alias{platypus}
 \title{platypus multiview learning}
 \usage{
-platypus(fn.labs, fn.views, ignore.label = "intermediate", i = 100,
+platypus(fn.labs, view.list, ignore.label = "intermediate", i = 100,
   m = 100, u = FALSE, e = FALSE, updating = FALSE,
   expanded.output = FALSE)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}
 
-\item{fn.views}{List of view files}
+\item{view.list}{List of view objects}
 
 \item{i}{Maximal number of iterations for each platypus run, default=100}
 
@@ -32,9 +32,5 @@ final.result.list
 The standard platypus function for multiview learning
 first pass the filepath for the labs file and the column name or number of the class (if not given, first column is default)
 pass the filepath of a parameter-file for each view
-}
-\examples{
-platypus(fn.labs, fn.views, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
-platypus(fn.labs, fn.views)
 }
 \keyword{platypus}

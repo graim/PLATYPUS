@@ -26,9 +26,6 @@
 #' @return final.result.list
 #' @keywords platypus
 #' @export
-#' @examples
-#' platypus(fn.labs, view.list, ignore.label='intermediate', i=100, m=95, u=FALSE, e=TRUE)
-#' platypus(fn.labs, view.list)
 platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
@@ -38,7 +35,7 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
 
   ## Set more readable names
   majority.threshold.percent<-m
-  no.iterations<-i
+  n.iters<-i
   classcol.labs <- 1 # The column containing the output labels. Often is the first column, not including rownames
   
   ## Create view from each parameter file and store in a list of views 
@@ -92,15 +89,15 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
   if(expanded.output){
     collect.iteration.lists <- list()
     
-    unlabelled.matrix <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=no.iterations,dimnames=list(ids.unlabelled))
+    unlabelled.matrix <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=n.iters,dimnames=list(ids.unlabelled))
     unlabelled.matrices.list <- list()
     for (view.i in seq(length(view.list))) {
-      unlabelled.matrices.list[[view.i]] <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=no.iterations,dimnames=list(ids.unlabelled))
+      unlabelled.matrices.list[[view.i]] <- matrix(data=NA,nrow=length(ids.unlabelled),ncol=n.iters,dimnames=list(ids.unlabelled))
     }
   }
   
   ## Repeat until all labels are 'known' OR we hit the iterations limit OR no new labels are added anymore
-  for (i in seq(no.iterations)) {
+  for (i in seq(n.iters)) {
 	print(paste('Iteration',i))
     
     ## Quit if there aren't any unlabelled IDs left
@@ -182,11 +179,11 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
         unlabelled.matrices.list[[view.i]][rownames(predictions),i] <- predictions[,view.i]
       }
     }
-  } # end for no.iterations
+  } # end for n.iters
 
   ## Collect information for the returned result
   final.result.list <- list(final.views=view.list,labels.complete=labels,labels.new=new.labels,unlabelled.ids=ids.unlabelled
-                            ,weighting.threshold=weighting.threshold,no.iterations=no.iterations,expanded.output=expanded.output)
+                            ,weighting.threshold=weighting.threshold,n.iters=n.iters,expanded.output=expanded.output)
 
   if(expanded.output){
     final.result.list$iteration.information <- collect.iteration.lists

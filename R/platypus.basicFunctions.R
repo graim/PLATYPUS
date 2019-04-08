@@ -85,57 +85,42 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
 ## Read in the parameter file for a view and return a view object
 ## TODO: Add in option for view name
 ## TODO: add in SVM models
+#' Create a view from a configuration file
+#'
+#' @param filename File containing config information
+#' @param delim Optional delimeter for the file containing view data (not the config file!)
+#' @return View object
+#' @keywords platypus
+#' @export
 load.parameterfile <- function(filename, delim='\t'){
+ 
+  # Load parameters file 
+  param.table <- read.table(filename, sep='\t',header=FALSE, row.names=1)
   
-  param.table <- read.table(filename, sep=delim,header=FALSE, row.names=1)
-  
-  # check the type and create a view object
+  # Check the type and create a view object, set type-specific parameters
   type <- param.table["type",1]
   if(type == "en"){
     view.object <- ElasticNet(param.file=filename,data.fn=toString(param.table["data.fn",1]))
-    if("alpha" %in% rownames(param.table)){
-      view.object$alpha <- as.numeric(as.character(param.table["alpha",1]))
-    }
-    if("measure" %in% rownames(param.table)){
-      view.object$measure <- as.character(param.table["measure",1])
-    }
-    if("drop" %in% rownames(param.table)){
-      view.object$drop <- as.logical(param.table["drop",1])
-    }
-    if("drop.to" %in% rownames(param.table)){ 
-      view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1]))
-    }
-    if("acc" %in% rownames(param.table)){
-      view.object$acc <- as.numeric(as.character(param.table["acc",1]))
-    }
-    return(view.object)
-  } # end type EN
-  if(type == 'rf'){
+    if("alpha" %in% rownames(param.table)){ view.object$alpha <- as.numeric(as.character(param.table["alpha",1])) }
+    if("measure" %in% rownames(param.table)){ view.object$measure <- as.character(param.table["measure",1]) }
+  } else if(type == 'rf'){
     view.object <- RandomForest(param.file=filename,data.fn=toString(param.table["data.fn",1]))
-    if("mtry" %in% rownames(param.table)){
-      view.object$mtry <- as.numeric(as.character(param.table["mtry",1]))
-    }
-    if("ntree" %in% rownames(param.table)){
-      view.object$ntree <- as.numeric(as.character(param.table["ntree",1]))
-    }
-    if("drop" %in% rownames(param.table)){
-      view.object$drop <- as.logical(param.table["drop",1])
-    }
-    if("drop.to" %in% rownames(param.table)){
-      view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1]))
-    }
-    if("acc" %in% rownames(param.table)){
-      view.object$acc <- as.numeric(as.character(param.table["acc",1]))
-    }
-    
-    return(view.object)
-  } # end type RF
-  if(type == 'svm'){
+    if("mtry" %in% rownames(param.table)){ view.object$mtry <- as.numeric(as.character(param.table["mtry",1])) }
+    if("ntree" %in% rownames(param.table)){ view.object$ntree <- as.numeric(as.character(param.table["ntree",1])) }
+  } else if(type == 'svm'){
+    stop("Sorry, SVMs are not working yet!")
     ## TODO: implement svm types :)
+  } else { 
+    stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
   }
 
-  # if nothing was returned so far, send error message
-  stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
+  # Parameters common to all view types
+  if("drop" %in% rownames(param.table)){ view.object$drop <- as.logical(param.table["drop",1]) } # TODO: Remove this option
+  if("drop.to" %in% rownames(param.table)){ view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1])) } # TODO: Remove this option
+  if("acc" %in% rownames(param.table)){ view.object$acc <- as.numeric(as.character(param.table["acc",1])) }
+  if("data.fn" %in% rownames(param.table)){ view.object$data.matrix <- data.matrix( read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) ) } # TODO: Do we really want to force everything to be numeric???
+
+  return(view.object)
 }
 
 
@@ -250,10 +235,10 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
   # Train model TODO remove library calls!?
-  if(!require(glmnet)) {
-    install.packages('glmnet')
+  #if(!require(glmnet)) {
+  #  install.packages('glmnet')
     library(glmnet)
-  }
+  #}
   # Reduce number of folds if fewer than 10 samples per fold
   if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10);print(paste('Using',nfolds,'because not enough samples')) }
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
@@ -270,10 +255,10 @@ view.train.RandomForest <- function( labels, view.object  ){
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
   # Train model
-  if(!require(randomForest)) {
-    install.packages('randomForest')
+  #if(!require(randomForest)) {
+  #  install.packages('randomForest')
     library(randomForest)
-  }
+  #}
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
                                      mtry=view.object$mtry, 
@@ -288,10 +273,10 @@ view.train.SupportVectorMachine <- function( labels, view.object  ){
 #  print( summary( labels[ids,1] ) ) # TODO
 
   # Train model
-  if(!require(e1071)) {
-    install.packages('e1071')
+  #if(!require(e1071)) {
+  #  install.packages('e1071')
     library(e1071)
-  }
+  #}
   view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
                                        kernel=view.object$kernel,  
                                        cost=view.object$cost, 
@@ -403,10 +388,10 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   if(flag.debug) { print('Created category.all and category.majority');flush.console() }
 
   ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
-  if(!require(randomForest)) {
-    install.packages('randomForest')
+  #if(!require(randomForest)) {
+  #  install.packages('randomForest')
     library(randomForest)
-  }
+  #}
   #require(randomForest) 
   #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model
   for.model.predictions <- cbind(labels=labels[rownames(predictions),1], predictions) # Combine labels and predictions from each view to train the stacked model

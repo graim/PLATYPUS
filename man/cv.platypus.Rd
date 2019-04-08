@@ -5,7 +5,7 @@
 \title{k-fold cross validation for platypus}
 \usage{
 cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
-  no.iterations = 100, majority.threshold.percent = 100,
+  n.iters = 100, majority.threshold.percent = 100,
   expanded.output = FALSE, updating = FALSE,
   ignore.label = "intermediate", parallel = FALSE, num.cores = 25,
   output.folder = NA)
@@ -19,7 +19,7 @@ cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
 
 \item{cv.folds}{number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10}
 
-\item{no.iterations}{Maximal number of iterations for each platypus run, default=100}
+\item{n.iters}{Maximal number of iterations for each platypus run, default=100}
 
 \item{majority.threshold.percent}{Percent agreement required to learn a sample's class label, default=100}
 
@@ -40,10 +40,5 @@ A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 }
 \description{
 k-fold cross validation for platypus
-}
-\examples{
-TODO show how to generate config.files and fn.labs
-cv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
-cv.platypus(config.files,fn.labs)
 }
 \keyword{platypus}

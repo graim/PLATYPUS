@@ -1,22 +1,3 @@
-#' pseudocode:
-#'     for (v in views)
-#'       load v
-#'     load labels
-#'
-#'     divide labelled data in folds
-#'     for(f in folds):
-#'       unlabelled.data <- fold f
-#'       delete f from labels
-#'       while( not converged on labels OR no changes anymore )
-#'         for( v in views )
-#'           train v on all sets but f
-#'           try to predict fold f
-#'         add newly found labels to training data
-#'         calculate performance for added labels
-#'       calculate overall performance for a fold
-#'     average performance over folds
-
-
 #' Label learning validation
 #'
 #' Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
@@ -33,11 +14,7 @@
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export 
-#' @examples
-#' TODO show how to generate config.files and fn.labs
-#' llv.platypus(config.files,fn.labs)
-#' llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
-llv.platypus <- function(view.list,fn.labs,llv.folds=10,no.iterations=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
   
   ## Set debug flag on/off for testing - currently we don't use this
   #flag.debug <- TRUE
@@ -90,7 +67,7 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,no.iterations=100,majori
     write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
     
     # get platypus result list
-    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=no.iterations, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
     
     ## Calculate final ll-performance
     # get rid of unused iterations

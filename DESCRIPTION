@@ -7,14 +7,17 @@ Authors@R: c(
 	person("Joshua", "Stuart", role="aut"))
 Description: Multiple task learning via cotraining.
 License: GPL-3
-Imports:
+Depends:
 	glmnet,
-	randomForest,
+	randomForest
+Imports:
 	foreach,
 	doParallel,
 	methods,
 	MASS,
-	gplots
+	gplots,
+	parallel,
+	data.table
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 BugReports: https://github.com/graim/PLATYPUS/issues

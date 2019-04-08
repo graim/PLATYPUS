@@ -2,12 +2,9 @@
 % Please edit documentation in R/llv.platypus.R
 \name{llv.platypus}
 \alias{llv.platypus}
-\title{pseudocode:
-    for (v in views)
-      load v
-    load labels}
+\title{Label learning validation}
 \usage{
-llv.platypus(view.list, fn.labs, llv.folds = 10, no.iterations = 100,
+llv.platypus(view.list, fn.labs, llv.folds = 10, n.iters = 100,
   majority.threshold.percent = 100, expanded.output = TRUE,
   updating = FALSE, ignore.label = "intermediate", parallel = FALSE,
   num.cores = 25, classcol.labs = 1, output.folder = NA)
@@ -37,26 +34,6 @@ llv.platypus(view.list, fn.labs, llv.folds = 10, no.iterations = 100,
 A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 }
 \description{
-divide labelled data in folds
-    for(f in folds):
-      unlabelled.data <- fold f
-      delete f from labels
-      while( not converged on labels OR no changes anymore )
-        for( v in views )
-          train v on all sets but f
-          try to predict fold f
-        add newly found labels to training data
-        calculate performance for added labels
-      calculate overall performance for a fold
-    average performance over folds
-Label learning validation
-}
-\details{
 Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
-}
-\examples{
-TODO show how to generate config.files and fn.labs
-llv.platypus(config.files,fn.labs)
-llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
 }
 \keyword{platypus}

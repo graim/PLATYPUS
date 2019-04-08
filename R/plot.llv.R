@@ -24,14 +24,14 @@ plot.llv <- function(fn.labs, folder) {
   if(!file.exists(folder)) { stop(paste("ERROR: Folder does not exist:",folder)) }
 
   ## Load libraries TODO - is this package really necessary???
-  if(!require(MASS)) {
-    install.packages('MASS')
-    library(MASS)
-  }
-  if(!require(gplots)) {
-    install.packages('gplots')
-    library(gplots)
-  }
+#  if(!require(MASS)) {
+#    install.packages('MASS')
+#    library(MASS)
+#  }
+#  if(!require(gplots)) {
+#    install.packages('gplots')
+#    library(gplots)
+#  }
 
   ## Return gracefully if the llv output files don't exist
 # TODO: is perf_platypus_expanded.tab really necessary? Would like to eliminate needing to run CV before plotting this fxn

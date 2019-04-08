@@ -7,8 +7,8 @@
 
 ## Load libraries
 library(devtools)
-install_github('graim/PLATYPUS')
-install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/") 
+#install_github('graim/PLATYPUS')
+install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/", force=TRUE) 
 library(PLATYPUS)
 
 ## Baseline view data: TODO 
@@ -59,7 +59,7 @@ config.files <- file.path('config', config.files)
 
 ## Create view from each parameter file and store in a list of views 
 view.list <- lapply(config.files, load.parameterfile ) 
-view.list <- lapply(view.list, load.data)
+#view.list <- lapply(view.list, load.data)
 
 
 
@@ -67,8 +67,8 @@ print('Views in use:'); flush.console()
 print(config.files)
 
 ## Set parameters
-n.iters  <- 2                                             # Run for this many iterations of label learning
-m.thresh <- 95                                             # Threshold for learning a label (0-1 range)
+n.iters  <- 25                                             # Run for this many iterations of label learning
+m.thresh <- 75                                             # Threshold for learning a label (0-1 range)
 of.name  <- 'platypus_output'                         # Directory where results should be stored
 fn.labs  <- 'CCLE_responselabel_binary_3cat_Lapatinib.tab' # Filename of the labels being predicted
 
