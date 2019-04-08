@@ -7,13 +7,13 @@
       load v
     load labels}
 \usage{
-llv.platypus(fn.views, fn.labs, llv.folds = 10, no.iterations = 100,
+llv.platypus(view.list, fn.labs, llv.folds = 10, no.iterations = 100,
   majority.threshold.percent = 100, expanded.output = TRUE,
   updating = FALSE, ignore.label = "intermediate", parallel = FALSE,
   num.cores = 25, classcol.labs = 1, output.folder = NA)
 }
 \arguments{
-\item{fn.views}{List of view files}
+\item{view.list}{List of view objects}
 
 \item{fn.labs}{File containing outcome labels}
 
@@ -57,6 +57,6 @@ Similar to cross-fold validation, label learning validation for platypus is used
 \examples{
 TODO show how to generate config.files and fn.labs
 llv.platypus(config.files,fn.labs)
-llv.platypus(fn.views=config.files,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
+llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=5,majority.threshold.percent=75,output.folder='platypus_output')
 }
 \keyword{platypus}

@@ -5,7 +5,7 @@
 \title{Grid search of parameters for an elastic net model using data X and labels y.}
 \usage{
 single.elasticNet.predictor(X, y, alpha = seq(0, 1, 0.1),
-  iterations = 10, nfolds = 10, measure = "auc", viewName = "",
+  iterations = 10, nfolds = 10, measure = "auc",
   ignore.label = "intermediate")
 }
 \arguments{
@@ -20,8 +20,6 @@ single.elasticNet.predictor(X, y, alpha = seq(0, 1, 0.1),
 \item{nfolds}{Number of folds to use}
 
 \item{measure}{Model performance measure to use. Default AUC.}
-
-\item{viewName}{Currently not in use, will be name of the view created from this.}
 
 \item{ignore.label}{Label type to be excluded (samples with this label will not be used in training).}
 }

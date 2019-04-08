@@ -5,6 +5,7 @@ Authors@R: c(
 	person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c("aut","cre")),
 	person("Verena", "Friedl", role="aut"),
 	person("Joshua", "Stuart", role="aut"))
+Description: Multiple task learning via cotraining.
 License: GPL-3
 Imports:
 	glmnet,
@@ -16,3 +17,4 @@ Imports:
 	gplots
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+BugReports: https://github.com/graim/PLATYPUS/issues

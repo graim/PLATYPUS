@@ -6,7 +6,7 @@
 \usage{
 gen.config(view.names, fn.tasks, config.loc = "config",
   model.type = c("en", "rf", "svm"), delim = ",", delim.v = "\\t",
-  n.iters = 100, ignore.label = "intermediate", nfolds = 10,
+  n.iters = 10, ignore.label = "intermediate", nfolds = 10,
   mtry = NA, ntree = c(500, 1000, 1500, 2000))
 }
 \arguments{
