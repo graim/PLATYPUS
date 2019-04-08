@@ -31,7 +31,7 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
   flag.debug <- FALSE 
-  if(flag.debug) { print('Debug is on');flush.console() }
+  if(flag.debug) { print('Debug is on') }
 
   ## Set more readable names
   majority.threshold.percent<-m
@@ -43,12 +43,12 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
 
   ## Load the data for labs and each view
   labs <- load.label.data(fn.labs,classcol.labs)
-  if(flag.debug) {print(table(labs[,classcol.labs]));flush.console()}
+  if(flag.debug) {print(table(labs[,classcol.labs]))}
 
   # Get the the two labels
   unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
   #view.list <- lapply(view.list, load.data) # moved this outside platypus so it takes in already loaded view list
-  if(flag.debug) { print(lapply(view.list, function(x){length(intersect(labs,rownames(x)))} ));flush.console()  } 
+  if(flag.debug) { print(lapply(view.list, function(x){length(intersect(labs,rownames(x)))} ))  } 
 
   ## Take all IDs for each data type
   all.ids <- unique( unlist(lapply(view.list, function(x) {rownames(x$data.matrix)} )) )

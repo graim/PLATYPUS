@@ -19,7 +19,7 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
   ## Set debug flag on/off for testing - currently we don't use this
   #flag.debug <- TRUE
   flag.debug <- FALSE
-  if(flag.debug) { print('Debug is on');flush.console() }
+  if(flag.debug) { print('Debug is on') }
 
   ## TODO: Don't load libraries this way :)
   require(foreach)

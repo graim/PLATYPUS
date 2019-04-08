@@ -30,7 +30,7 @@ plot.cv <- function(fn.labs, folder, plot.single.cvfolds=FALSE) {
   fn.cv.results <- file.path(folder,'perf_platypus_expanded.tab') 
 
   ## Gracefully quit if the requisite output file is missing    
-  if(!file.exists(fn.cv.results)){ stop('ERROR: missing PLATYPUS CV performance file'); flush.console() }
+  if(!file.exists(fn.cv.results)){ stop('ERROR: missing PLATYPUS CV performance file')  }
   accuracy.platypus.iterations <- read.table(fn.cv.results, sep='\t',header=T)
   
   ## Load the labels, remove unlabeled samples
@@ -269,6 +269,6 @@ plot.cv <- function(fn.labs, folder, plot.single.cvfolds=FALSE) {
 
   dev.off()
 
-  print(paste('Finished! Success. Plot saved as:', pdf.name));flush.console()
+  print(paste('Finished! Success. Plot saved as:', pdf.name))
 
 } # end plot.cv function

@@ -202,7 +202,7 @@ load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
 ## retrieve the two labels for training/predicting
 get.unique.labels <- function(label.vec,ignore.label){
 
-  #print(paste('ignoring',ignore.label));flush.console()
+  #print(paste('ignoring',ignore.label))
   ## Get the the two labels
   unique.labels <- unique(label.vec)
   
@@ -216,7 +216,7 @@ get.unique.labels <- function(label.vec,ignore.label){
   }
 
   unique.labels <- as.vector(sort(unique.labels))
-  #print(unique.labels);flush.console()
+  #print(unique.labels)
   
   # MVL classification for 2 labels
   if(length(unique.labels) != 2){
@@ -240,7 +240,7 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
     library(glmnet)
   #}
   # Reduce number of folds if fewer than 10 samples per fold
-  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10);print(paste('Using',nfolds,'because not enough samples')) }
+  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'because not enough samples')) }
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
                                   ,as.factor(labels[ids,1]), family=view.object$family
                                   ,type.measure=view.object$measure
@@ -351,7 +351,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
   flag.debug <- FALSE 
-  if(flag.debug) { print('Debug is on');flush.console() }
+  if(flag.debug) { print('Debug is on') }
 
   ## Return values:
   #  Test.ids is the list of sample IDs we are testing.
@@ -360,7 +360,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   #  category.all is a list of agreed/not.agreed labels. Names are sample IDs
   #  category.majority is also a list of agreed/not.agreed labels. Names are sample IDs
   
-  if(flag.debug) { print('platypus.predict');flush.console() }
+  if(flag.debug) { print('platypus.predict') }
   #  predictions is the data frame of samples (rows) by views label predictions (eg. sensitive/non-sensitive)
   ## Make per-view predictions
   predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
@@ -371,7 +371,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
     }
   } 
   predictions[is.na(predictions)] <- 'not.predicted' # TEMP removing NA values so model predictions work
-  if(flag.debug) { print('Created predictions matrix');flush.console() }
+  if(flag.debug) { print('Created predictions matrix') }
 
   # samples fall in 3 categories if view predictions are combined in an ensemble
   # agreed: there was enough agreement between the single views to make an ensemble prediction
@@ -385,7 +385,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   category.all[rownames(predictions[which(apply(predictions,1,function(x) sum(table(x))<length(view.list))),,drop=FALSE])] <- "not.assessed"
   category.all[rownames(predictions[which(apply(predictions,1,function(x) table(x)[1]==length(view.list))),,drop=FALSE])] <- "agreed"
   category.majority <- category.all # TODO: TEMP. This used to be different and part of weighting, not sure going to use in stacked version 
-  if(flag.debug) { print('Created category.all and category.majority');flush.console() }
+  if(flag.debug) { print('Created category.all and category.majority') }
 
   ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
   #if(!require(randomForest)) {
@@ -395,16 +395,16 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   #require(randomForest) 
   #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model
   for.model.predictions <- cbind(labels=labels[rownames(predictions),1], predictions) # Combine labels and predictions from each view to train the stacked model
-  #print(paste('Class for.model.predictions',class(for.model.predictions)));flush.console()
-  if(flag.debug) { print(unique(for.model.predictions[,1]));flush.console() } # Print the unique labels 
+  #print(paste('Class for.model.predictions',class(for.model.predictions)))
+  if(flag.debug) { print(unique(for.model.predictions[,1])) } # Print the unique labels 
   preds.model       <- randomForest( labels ~ ., for.model.predictions, ntree=100,replace=TRUE)
-  if(flag.debug) { print('Make stacked model predictions');flush.console() }
+  if(flag.debug) { print('Make stacked model predictions') }
   preds.stckd       <- predict(preds.model, predictions, predict.all=TRUE)
-  if(flag.debug) { print('Make preds.stckd');flush.console() }
+  if(flag.debug) { print('Make preds.stckd') }
   preds.stacked.all <- preds.stckd$individual
-  if(flag.debug) { print('Make preds.stckd.indiv');flush.console() }
+  if(flag.debug) { print('Make preds.stckd.indiv') }
 
-  if(flag.debug) { print('Stacked model predictions made');flush.console() }
+  if(flag.debug) { print('Stacked model predictions made') }
   tbl.preds.stckd           <- matrix(NA, nrow=nrow(preds.stacked.all), ncol=2)
   rownames(tbl.preds.stckd) <- rownames(preds.stacked.all)
   colnames(tbl.preds.stckd) <- unique.labels
@@ -415,44 +415,44 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   #category.majority <- predict(preds.model, predictions, predict.all=TRUE)$aggregate #preds.lbls #majority.res.list$category.majority #TODO: updated the typo, not tested yet 
   #category.majority <- preds.stckd$aggregate #preds.lbls #majority.res.list$category.majority #TODO: updated the typo, not tested yet 
 
-  if(flag.debug) { print('Created tbl.preds.stckd');flush.console() }
+  if(flag.debug) { print('Created tbl.preds.stckd') }
   #  final is a list of outcome label predictions - NOTE: some of these have NA values! Names are sample IDs
   final <- rep(NA, length(test.ids))
   names(final) <- test.ids
   final[rownames(preds.stckd)] <- preds.stckd$aggregate # tbl.preds.stckd[apply(tbl.preds.stckd,1,max)>=majority,]
-  if(flag.debug) { print('created final');flush.console() }
+  if(flag.debug) { print('created final') }
 
   # Reset the NA values from before
   predictions[predictions=='not.predicted'] <- NA # Put these back to NA values
   if(flag.debug) { 
-    print(unique(predictions));flush.console()
-    print('Re-Updated predictions matrix');flush.console()
+    print(unique(predictions))
+    print('Re-Updated predictions matrix')
   }
 
   ## Debug only
   if(flag.debug) { 
-    print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
-    print(length(test.ids));flush.console()
-    print(dim(predictions));flush.console()
-    print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
-    print(length(category.all));flush.console()
-    print(length(category.majority));flush.console()
+    print('Dimensions of test.ids, predictions, final, category.all, category.majority:')
+    print(length(test.ids))
+    print(dim(predictions))
+    print(length(final)) # TODO: Final in this version is a list, in stacked version is matrix. update!
+    print(length(category.all))
+    print(length(category.majority))
 
-    print('TEST.IDS:');flush.console()
-    print(head(test.ids));flush.console()
-    print('PREDICTIONS:');flush.console()
-    print(head(predictions));flush.console()
-    print('FINAL:');flush.console()
-    print(head(final));flush.console()
-    print('CATEGORY.ALL:');flush.console()
-    print(head(category.all));flush.console()
-    print('CATEGORY.MAJORITY:');flush.console()
-    print(head(category.majority));flush.console()
+    print('TEST.IDS:')
+    print(head(test.ids))
+    print('PREDICTIONS:')
+    print(head(predictions))
+    print('FINAL:')
+    print(head(final))
+    print('CATEGORY.ALL:')
+    print(head(category.all))
+    print('CATEGORY.MAJORITY:')
+    print(head(category.majority))
   }
 
   predictions <- cbind(predictions,final,category.all,category.majority)
 
-  if(flag.debug) { print('leaving platypus.predict');flush.console() }
+  if(flag.debug) { print('leaving platypus.predict') }
   return(predictions)
 
 }
@@ -486,23 +486,23 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.label
 
   ## Debug only
   if(flag.debug) {
-    print('Dimensions of test.ids, predictions, final, category.all, category.majority:');flush.console()
-    print(length(test.ids));flush.console()
-    print(dim(predictions));flush.console()
-    print(length(final));flush.console() # TODO: Final in this version is a list, in stacked version is matrix. update!
-    print(length(category.all));flush.console()
-    print(length(category.majority));flush.console()
+    print('Dimensions of test.ids, predictions, final, category.all, category.majority:')
+    print(length(test.ids))
+    print(dim(predictions))
+    print(length(final)) # TODO: Final in this version is a list, in stacked version is matrix. update!
+    print(length(category.all))
+    print(length(category.majority))
   
-    print('TEST.IDS:');flush.console()
-    print(head(test.ids));flush.console()
-    print('PREDICTIONS:');flush.console()
-    print(head(predictions));flush.console()
-    print('FINAL:');flush.console()
-    print(head(final));flush.console()
-    print('CATEGORY.ALL:');flush.console()
-    print(head(category.all));flush.console()
-    print('CATEGORY.MAJORITY:');flush.console()
-    print(head(category.majority));flush.console()
+    print('TEST.IDS:')
+    print(head(test.ids))
+    print('PREDICTIONS:')
+    print(head(predictions))
+    print('FINAL:')
+    print(head(final))
+    print('CATEGORY.ALL:')
+    print(head(category.all))
+    print('CATEGORY.MAJORITY:')
+    print(head(category.majority))
   }
 
   predictions <- cbind(predictions,final,category.all,category.majority)
