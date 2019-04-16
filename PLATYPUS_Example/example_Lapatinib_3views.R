@@ -8,6 +8,7 @@
 ## Load libraries
 library(devtools)
 #install_github('graim/PLATYPUS')
+build()
 install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/", force=TRUE) 
 library(PLATYPUS)
 
@@ -79,11 +80,11 @@ platypus.res <- platypus(view.list=view.list,fn.labs=fn.labs,e=TRUE,i=n.iters,m=
 
 ## Call label learning validation (LLV)
 print('Running llv')
-llv.platypus.res <- llv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name)
+llv.platypus.res <- llv.platypus(view.list=view.list,fn.labs=fn.labs,n.iters=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name)
  
 ## Call cross validation (CV)
 print('Running cv')
-cv.platypus.res <- cv.platypus(view.list=view.list,fn.labs=fn.labs,no.iterations=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
+cv.platypus.res <- cv.platypus(view.list=view.list,fn.labs=fn.labs,n.iters=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
 
 ## After running LLV and CV, generate the PLATYPUS performance plots
 ## TODO: R reads these as plot() functions for data types llv and cv. Would like to update my code to make that work!

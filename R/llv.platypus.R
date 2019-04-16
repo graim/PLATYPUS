@@ -24,11 +24,11 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
   ## TODO: Don't load libraries this way :)
   require(foreach)
   require(methods)
-  if(parallel) {
-    require(doParallel)
-    cl <- makeCluster(num.cores,outfile="")
-    registerDoParallel(cl, cores = num.cores)
-  }
+#  if(parallel) {
+#    require(doParallel)
+#    cl <- makeCluster(num.cores,outfile="")
+#    registerDoParallel(cl, cores = num.cores)
+#  }
 
   print(paste('Ignoring labels for samples labelled:',ignore.label))
 
@@ -137,20 +137,9 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
     }
     return(return.list) 
   } # end function do.one.llvfold
-  
-  if (parallel) {
-    llv.result.list <- foreach(k=seq(llv.folds), .export=c("platypus","drop.features","ElasticNet","RandomForest",
-        "load.parameterfile","load.data","load.data.ElasticNet","load.data.RandomForest",
-        "load.label.data","get.unique.labels","view.train","view.train.ElasticNet","view.train.RandomForest","view.predict","view.predict.ElasticNet",
-        "view.predict.RandomForest","platypus.predict","update.accuracies","update.accuracy","update.accuracy.ElasticNet","update.accuracy.RandomForest",
-        "calculate.accuracy","get.majority.weighting","get.new.labels.majorityWeighted","normalize.accuracies",
-        "normalize.accuracy.log","calculate.performance","calculate.performance.view","get.labelling.performance"),
-        .verbose=TRUE, .packages=c("glmnet","randomForest")) %dopar%
-      do.one.llvfold(k = k)
-  } else {
-    llv.result.list <- lapply(seq(llv.folds), do.one.llvfold)
-    #llv.result.list <- foreach(k=seq(llv.folds)) %do% do.one.llvfold(k = k)  # Old but saving it for now
-  }  
+ 
+  if(parallel) { llv.result.list <- parallel::mclapply(seq(llv.folds), do.one.llvfold) }
+          else { llv.result.list <- lapply(seq(llv.folds), do.one.llvfold) }
   
   ## Get output together
   # Collect accuracy over llv-iterations

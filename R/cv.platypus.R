@@ -40,10 +40,7 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
 #    install.packages('foreach')
 #   library(foreach) 
 #  }
-  if(!require(methods)) { # TODO: where is this used????
-    install.packages('methods')
-    library(methods)
-  }
+  requireNamespace(methods) # TODO untested # TODO untested
   
   # set parallel background if parallel flag is set
 #  if(parallel){
@@ -190,25 +187,8 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
     return(return.list)
   } # end do.one.cvfold fxn
 
-
-  
-  if (parallel) {
-    print("working parallel")
-    # TODO: I've been removing functions but haven't been very careful about making sure they're removed from these lists
-    cv.results.list <- parallel::mclapply(seq(cv.folds), do.one.cvfold)
-#    cv.result.list <- foreach(k=seq(cv.folds), .export=c("platypus", "drop.features" ,"ElasticNet" ,"RandomForest"
-#      ,"load.parameterfile" ,"load.data" ,"load.data.ElasticNet" ,"load.data.RandomForest"
-#      ,"load.label.data" ,"get.unique.labels" ,"view.train" ,"view.train.ElasticNet" ,"view.train.RandomForest" ,"view.predict" ,"view.predict.ElasticNet"
-#      ,"view.predict.RandomForest" ,"platypus.predict" ,"update.accuracies" ,"update.accuracy" ,"update.accuracy.ElasticNet" ,"update.accuracy.RandomForest"
-#      ,"calculate.accuracy" ,"get.majority.weighting" ,"get.new.labels.majorityWeighted" ,"normalize.accuracies"
-#      ,"normalize.accuracy.log" ,"calculate.performance" ,"calculate.performance.view" ,"get.labelling.performance")
-#      , .verbose=TRUE
-#      , .packages=c("glmnet","randomForest")) %dopar% do.one.cvfold(k = k)
-  } else {
-    print("working non-parallel")
-    cv.result.list <- lapply(seq(cv.folds), do.one.cvfold)
-    #cv.result.list <- foreach(k=seq(cv.folds)) %do% do.one.cvfold(k = k) # Old but saving it for now
-  }
+  if(parallel) { cv.result.list <- parallel::mclapply(seq(cv.folds), do.one.cvfold) }
+          else { cv.result.list <- lapply(seq(cv.folds), do.one.cvfold) }
 
   if(flag.debug) { print('out of cv folds loop') }
 

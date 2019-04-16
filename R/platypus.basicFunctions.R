@@ -23,6 +23,19 @@ drop.features <- function(dat, k) {
   return(dat)
 }
 
+## TODO Make a platypus object class, as well as cv.platypus and llv.platypus
+# fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE
+# Careful- we already define platypus() as a function for mvl
+#Platypus <- function(labs, views, iters=NA) {
+#  if (is.na(iters)) iters <- 10
+#  if (!is.character(labs)) stop("labs must be character")
+#  if (!is.list(views)) stop("views must be a list")
+#  if (!all(is.character(sapply(views,class)))) stop('views must be a list of strings')
+#  if(!is.numeric(iters)) stop ('iters must be numeric')
+#  structure(list(views=views,labs=labs,iters=iters), class = "foo")
+#}
+#platypus('moo', list('oink','baa'))
+
 
 ## create a class for each view-type
 ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measure="auc",drop=TRUE,drop.to=5000,model=c(),acc=0.5, acc.norm=0, family='binomial') {
