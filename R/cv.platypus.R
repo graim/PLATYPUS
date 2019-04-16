@@ -29,18 +29,21 @@
 cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
  
   ## Set debug flag on/off for testing
-  #flag.debug <- TRUE
-  flag.debug <- FALSE
+  flag.debug <- TRUE
+  #flag.debug <- FALSE
   if(flag.debug) { print('Debug is on') }
 
 
   ## Load libraries, install if not already installed
   ## TODO: Move this into the package installation, then just load libraries normally
+ require(foreach)
+  require(methods)
+
 #  if(!require(foreach)) {
 #    install.packages('foreach')
 #   library(foreach) 
 #  }
-  requireNamespace(methods) # TODO untested # TODO untested
+#  requireNamespace(methods) # TODO untested # TODO untested
   
   # set parallel background if parallel flag is set
 #  if(parallel){
