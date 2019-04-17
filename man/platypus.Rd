@@ -4,26 +4,23 @@
 \alias{platypus}
 \title{platypus multiview learning}
 \usage{
-platypus(fn.labs, view.list, ignore.label = "intermediate", i = 100,
-  m = 100, u = FALSE, e = FALSE, updating = FALSE,
-  expanded.output = FALSE)
+platypus(fn.labs, view.list, b = "intermediate", i = 100, m = 100,
+  e = FALSE, u = FALSE)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}
 
 \item{view.list}{List of view objects}
 
+\item{b}{Label class to ignore, if any. Defaults to 'intermediate'}
+
 \item{i}{Maximal number of iterations for each platypus run, default=100}
 
 \item{m}{Percent agreement required to learn a sample's class label, default=100}
 
-\item{u}{Updating the accuracies of the single views in each iteration, default=FALSE}
-
 \item{e}{Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE}
 
-\item{w}{flag for weighting the preditions by accuracy, default=FALSE # TODO REMOVE}
-
-\item{b}{Label class to ignore, if any. Defaults to 'intermediate'}
+\item{u}{Updating the accuracies of the single views in each iteration, default=FALSE}
 }
 \value{
 final.result.list
