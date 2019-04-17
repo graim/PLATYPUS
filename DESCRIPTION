@@ -9,11 +9,12 @@ Description: Multiple task learning via cotraining.
 License: GPL-3
 Depends:
 	glmnet,
-	randomForest
+	randomForest,
+	methods
 Imports:
 	foreach,
 	doParallel,
-	methods,
+	e1071,
 	MASS,
 	gplots,
 	parallel,

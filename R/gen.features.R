@@ -8,7 +8,7 @@
 ## can calculate median or variance as specified in value argument 
 
 generate.feature.data.summary <- function(gene.sample.data, feature.gene.matrix,type = 'expression', value = 'median',num.gene.threshold = 5) {
-  if(value=='kurtosis') { require('e1071') } # For the kurtosis option
+#  if(value=='kurtosis') { require('e1071') } # For the kurtosis option
 
   # keep only genes that are found in both data and feature/gene matrix 
   feature.gene.matrix <- feature.gene.matrix[,colnames(feature.gene.matrix) %in% colnames(gene.sample.data)]
@@ -42,7 +42,7 @@ generate.feature.data.summary <- function(gene.sample.data, feature.gene.matrix,
             function(sample) {
               tmp.median     <- median(sample[colnames(gene.sample.data) %in% feature.genes])
               tmp.var     <- var(sample[colnames(gene.sample.data) %in% feature.genes])
-              tmp.kurtosis  <- kurtosis(sample[colnames(gene.sample.data) %in% feature.genes])
+              tmp.kurtosis  <- e1071::kurtosis(sample[colnames(gene.sample.data) %in% feature.genes])
               max(tmp.median, tmp.var, tmp.kurtosis)
               }
             )

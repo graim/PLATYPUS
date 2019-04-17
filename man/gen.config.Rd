@@ -16,7 +16,21 @@ gen.config(view.names, fn.tasks, config.loc = "config",
 
 \item{config.loc}{Where the config files should be stored}
 
-\item{model.type}{Type of classifier to use}
+\item{model.type}{Type of classifier to use (select from en, rf, svm)}
+
+\item{delim}{Delimiter for the task file}
+
+\item{delim.v}{Delimiter for the view data file}
+
+\item{n.iters}{Number of iterations to run}
+
+\item{ignore.label}{Label to ignore in the task file (default 'intermediate')}
+
+\item{nfolds}{Number of folds to use}
+
+\item{mtry}{For random forest models, what mtry value(s) to use}
+
+\item{ntree}{For random forest models, number of trees to build}
 }
 \value{
 List of config filenames, for use in platypus

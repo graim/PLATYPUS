@@ -30,12 +30,21 @@ write.config.rf <- function(x,v,fn.config='config_TEST.txt') {
   write(paste('acc',x$accuracy, sep='\t'), file=fn.config, append=TRUE)
 }
 
+## TODO: Do we really need all these input options???
+
 #' Generate configuration files for platypus
 #'
 #' @param view.names List of files containing view feature data
 #' @param fn.tasks File containing all task labels, one column per task
 #' @param config.loc Where the config files should be stored
-#' @param model.type Type of classifier to use
+#' @param model.type Type of classifier to use (select from en, rf, svm)
+#' @param delim Delimiter for the task file
+#' @param delim.v Delimiter for the view data file
+#' @param n.iters Number of iterations to run
+#' @param ignore.label Label to ignore in the task file (default 'intermediate')
+#' @param nfolds Number of folds to use
+#' @param mtry For random forest models, what mtry value(s) to use
+#' @param ntree For random forest models, number of trees to build
 #'
 #' @return List of config filenames, for use in platypus
 #'

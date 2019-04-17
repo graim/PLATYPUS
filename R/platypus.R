@@ -10,6 +10,8 @@
 #       check for instances where predictions agree -> new labels
 #       add newly found labels to labelled data 
 
+#OLD NOT USED @param w flag for weighting the predictions by accuracy, default=FALSE # TODO REMOVE
+
 #' platypus multiview learning
 #'
 #' The standard platypus function for multiview learning
@@ -17,16 +19,20 @@
 #' pass the filepath of a parameter-file for each view
 #' @param view.list List of view objects
 #' @param fn.labs File containing outcome labels
+#' @param b Label class to ignore, if any. Defaults to 'intermediate'
 #' @param i Maximal number of iterations for each platypus run, default=100
 #' @param m Percent agreement required to learn a sample's class label, default=100
-#' @param w flag for weighting the preditions by accuracy, default=FALSE # TODO REMOVE
-#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
-#' @param b Label class to ignore, if any. Defaults to 'intermediate'
+#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
 #' @return final.result.list
 #' @keywords platypus
+#' @import glmnet
+#' @import randomForest 
+#' @import methods
 #' @export
-platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
+platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE,u=FALSE) {
+#platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, e=FALSE,u=FALSE,expanded.output=FALSE) {
+#platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
   #flag.debug <- TRUE
@@ -37,6 +43,9 @@ platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=1
   majority.threshold.percent<-m
   n.iters<-i
   classcol.labs <- 1 # The column containing the output labels. Often is the first column, not including rownames
+  updating <- u
+  expanded.output <- e
+  ignore.label <- b
   
   ## Create view from each parameter file and store in a list of views 
   #view.list <- lapply(fn.views, load.parameterfile ) # moved this outside platypus so it takes in already loaded view list

@@ -36,8 +36,8 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
   ## Drop to set of samples in both labels and features data
   #print('Dropping to overlapping samples')
   y   <- y[y!=ignore.label] # remove label user wants to ignore
-  y   <- y[complete.cases(y)]
-  X   <- X[complete.cases(X),,drop=F]
+  y   <- y[stats::complete.cases(y)]
+  X   <- X[stats::complete.cases(X),,drop=F]
   X   <- X[intersect(rownames(X),names(y)),,drop=F]
   y   <- y[intersect(rownames(X),names(y))]
 
@@ -58,7 +58,7 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
     res.all[i,'lambda'] <- res$lambda.min
   } # end for each alpha
 
-  res <- aggregate(res.all, by=list(res.all$alpha), FUN=median)[,c('alpha','accuracy')] # TODO
+  res <- stats::aggregate(res.all, by=list(res.all$alpha), FUN=stats::median)[,c('alpha','accuracy')] # TODO
   return(res[res$accuracy==max(res$accuracy),])
   
 } # end single.elasticNet.predictor
@@ -83,9 +83,6 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
 #' @param y Named vector of labels
 #' @param mtry Number of predictors samples for splitting at each node
 #' @param ntree Number of trees grown
-#' @param iterations Number of iterations per alpha to run the test
-#' @param nfolds Number of folds to use
-#' @param measure Model performance measure to use. Defaults to accuracy.
 #' @param ignore.label Label type to be excluded (samples with this label will not be used in training).
 #'
 #' @return list containing mtry, ntree, and accuracy (or whichever measure selected) for best model.
@@ -98,11 +95,22 @@ single.elasticNet.predictor <- function(X,y,alpha = seq(0,1,0.1),iterations = 10
 #' res <- single.randomForest.predictor(X,y)
 #'
 #' @export
-single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2000)){
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(names(y),rownames(X))
-  X   <- X[ids,]
-  y   <- as.factor(y[ids])
+single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2000), ignore.label='intermediate'){
+ ##TODO: stopped here - added the lines below from elastic net version but it creates a samples error when doing devtools::check()
+  ## Remove unlabeled samples and those with missing data
+  ## Drop to set of samples in both labels and features data
+  y   <- y[y!=ignore.label] # remove label user wants to ignore
+  y   <- y[stats::complete.cases(y)]
+  X   <- X[stats::complete.cases(X),,drop=F]
+  X   <- X[intersect(rownames(X),names(y)),,drop=F]
+  y   <- y[intersect(rownames(X),names(y))]
+
+  ## Make sure we are dealing with factors, for a classification problem. TODO: also check num unique labels?
+  ## TODO: Should relevel if there's any labels with ignore.label, since it'll still have the factor level.
+  if(!is.factor(y)) {
+    message('Converting labels to factor')
+    y <- as.factor(y)
+  }
 
   # set up mtry if not specified by function call
   if((is.na(mtry))) { 
@@ -122,8 +130,6 @@ single.randomForest.predictor <- function(X, y, mtry=NA, ntree=c(500,1000,1500,2
   ## Calculate acc for each parameter set
   # acc = (TP + TN) / (P + N)
   params$acc <- sapply(randomForest.model, function(x) {signif(sum(diag(table(x$predicted,y)))/sum(table(x$predicted,y)), digits=3)})
-
-  #print(params)
 
   # Select best model, return that result
   params.best <- randomForest.model[[max(params$acc, index=T)]]

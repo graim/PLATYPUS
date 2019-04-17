@@ -36,8 +36,8 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
 
   ## Load libraries, install if not already installed
   ## TODO: Move this into the package installation, then just load libraries normally
- require(foreach)
-  require(methods)
+# require(foreach)
+#  require(methods)
 
 #  if(!require(foreach)) {
 #    install.packages('foreach')
@@ -93,14 +93,15 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
     labs.reduced <- labs
     labs.reduced[which(labs$fold == k),classcol.labs] <- 'testing'
     fn.labels.reduced <- tempfile()
-    write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
+    utils::write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
 #    print(apply(labs.reduced,2,table)) 
 #    print(dim(labs))
 #    print(dim(labs.reduced))
     if(flag.debug) { print(table(labs.reduced)) }
  
     # get platypus result list
-    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating,b=ignore.label)
+    #platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
  
     # TODO: THIS NEXT CODE BLOCK IS THE BROKEN BIT FOR SSC EXAMPLE
     # Error in na.fail.default(list(labels = c(`11031.p1` = 1L, `11033.p1` = 2L,  : 
@@ -109,8 +110,8 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
     test.ids <- rownames(labs[which(labs$fold == k & labs[,classcol.labs] != ignore.label),,drop=F])
     predictions <- platypus.predict(platypus.result$final.views, platypus.result$weighting.threshold, test.ids,unique.labels,labs[,classcol.labs,drop=FALSE])
 
-    if(flag.debug) { print('Held out data subset predictions made successfully') }
-    if(flag.debug) { print(head(predictions)) }
+    if(flag.debug) { message('Held out data subset predictions made successfully') }
+    if(flag.debug) { message(utils::head(predictions)) } # TODO: Prints in 1 line, is ugly.
     
     
     ## Calculate final platypus performance for each cv-fold
@@ -209,7 +210,7 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
   if(flag.debug) { print('collected cv iteration performances') }
 
   if(!is.na(output.folder)) {
-    write.table(accuracy.cvfolds,file=file.path(output.folder,"perf_platypus.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
+    utils::write.table(accuracy.cvfolds,file=file.path(output.folder,"perf_platypus.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
     save(performance.cvfolds,file=file.path(output.folder,"performance.cvfolds.Rdata") )
   }
 
@@ -236,7 +237,7 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
 
     if(flag.debug) { print('Renamed the results') }
     if(!is.na(output.folder)) { 
-      write.table(accuracy.platypus.iterations, file= file.path(output.folder,"perf_platypus_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
+      utils::write.table(accuracy.platypus.iterations, file= file.path(output.folder,"perf_platypus_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
       save(performance.iterations,file =file.path(output.folder,"performance.iterations.Rdata") )
     }
     if(flag.debug) { print('Renamed the results') }

@@ -5,7 +5,7 @@
 \title{Grid search of parameters for a random forest model using data X and labels y.}
 \usage{
 single.randomForest.predictor(X, y, mtry = NA, ntree = c(500, 1000,
-  1500, 2000))
+  1500, 2000), ignore.label = "intermediate")
 }
 \arguments{
 \item{X}{Feature matrix (sample per row)}
@@ -15,12 +15,6 @@ single.randomForest.predictor(X, y, mtry = NA, ntree = c(500, 1000,
 \item{mtry}{Number of predictors samples for splitting at each node}
 
 \item{ntree}{Number of trees grown}
-
-\item{iterations}{Number of iterations per alpha to run the test}
-
-\item{nfolds}{Number of folds to use}
-
-\item{measure}{Model performance measure to use. Defaults to accuracy.}
 
 \item{ignore.label}{Label type to be excluded (samples with this label will not be used in training).}
 }

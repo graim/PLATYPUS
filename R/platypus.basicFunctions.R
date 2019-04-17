@@ -1,12 +1,7 @@
 ## Basic Functions for the MVL framework
-##
-## Created: Dec 2014, Kiley Graim
-##    Updated: September 2015, Verena Friedl
-##    Updated: Feb 2017, Kiley Graim
-##    Last Updated: Jan 2018, Kiley Graim
-
 
 ## Subset to k most variable features
+## TODO: Do we really need to provide this??
 drop.features <- function(dat, k) {
   if(ncol(dat) > k ) {
     vars <- apply(dat, 2, var)
@@ -83,8 +78,8 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
     param.file = param.file,
     data.matrix = data.matrix,
     data.fn = data.fn,
-    type = type,
-    C = C,
+#    type = type, 
+#    C = C,
     model = model,
     acc = acc,
     accSD = accSD
@@ -247,11 +242,7 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-  # Train model TODO remove library calls!?
-  #if(!require(glmnet)) {
-  #  install.packages('glmnet')
-    library(glmnet)
-  #}
+#    library(glmnet)
   # Reduce number of folds if fewer than 10 samples per fold
   if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'because not enough samples')) }
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
@@ -268,10 +259,7 @@ view.train.RandomForest <- function( labels, view.object  ){
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
   # Train model
-  #if(!require(randomForest)) {
-  #  install.packages('randomForest')
-    library(randomForest)
-  #}
+  #  library(randomForest)
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
                                      mtry=view.object$mtry, 
@@ -288,7 +276,7 @@ view.train.SupportVectorMachine <- function( labels, view.object  ){
   # Train model
   #if(!require(e1071)) {
   #  install.packages('e1071')
-    library(e1071)
+    #library(e1071)
   #}
   view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
                                        kernel=view.object$kernel,  
@@ -403,7 +391,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
   #if(!require(randomForest)) {
   #  install.packages('randomForest')
-    library(randomForest)
+    #library(randomForest)
   #}
   #require(randomForest) 
   #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model

@@ -3,14 +3,16 @@
 #' Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
 #' @param view.list List of view objects 
 #' @param fn.labs File containing outcome labels
-#' @param k number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
-#' @param i Maximal number of iterations for each platypus run, default=100
-#' @param m Percent agreement required to learn a sample's class label, default=100
-#' @param u Updating the accuracies of the single views in each iteration, default=FALSE
-#' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
-#' @param b Label class to ignore, if any. Defaults to 'intermediate'
-#' @param o Name of the folder where output is stored.
-#' @param p The number of cores to use. Enables parallelization.
+#' @param llv.folds number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
+#' @param n.iters Maximal number of iterations for each platypus run, default=100
+#' @param majority.threshold.percent Percent agreement required to learn a sample's class label, default=100
+#' @param expanded.output Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
+#' @param updating Updating the accuracies of the single views in each iteration, default=FALSE
+#' @param ignore.label Label class to ignore, if any. Defaults to 'intermediate'
+#' @param parallel Whether or not to run in parallel mode TODO remove? numcores enables anyway
+#' @param num.cores The number of cores to use. Enables parallelization.
+#' @param classcol.labs Column containing the task label data. Default 1.
+#' @param output.folder Name of the folder where output is stored.
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export 
@@ -22,8 +24,8 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
   if(flag.debug) { print('Debug is on') }
 
   ## TODO: Don't load libraries this way :)
-  require(foreach)
-  require(methods)
+#  require(foreach)
+#  require(methods)
 #  if(parallel) {
 #    require(doParallel)
 #    cl <- makeCluster(num.cores,outfile="")
@@ -64,10 +66,11 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
     # The cell lines with a label to be ignored (usually the intermediate label), have to be kept in order to be excluded from the feature matrices of the views
     labs.reduced <- labs[which(labs$fold != k | labs[,classcol.labs] == ignore.label),,drop=F]
     fn.labels.reduced <- tempfile()
-    write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
+    utils::write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
     
     # get platypus result list
-    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating, b=ignore.label)
+    #platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
     
     ## Calculate final ll-performance
     # get rid of unused iterations
@@ -156,8 +159,8 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
     }
     
     if(!is.na(output.folder)){
-      write.table(accuracy.llvfolds, file= paste0(output.folder,"/perf_llv.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
-      write.table(accuracy.platypus.iterations, file= paste0(output.folder,"/perf_llv_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
+      utils::write.table(accuracy.llvfolds, file= paste0(output.folder,"/perf_llv.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
+      utils::write.table(accuracy.platypus.iterations, file= paste0(output.folder,"/perf_llv_expanded.tab"), sep="\t",row.names=F, col.names=T, quote=FALSE)
     }
     
     labelling.matrix.llvlist <- list()
