@@ -1,5 +1,5 @@
 Package: PLATYPUS
-Version: 0.1
+Version: 0.2
 Title: Multiple view and task learning
 Authors@R: c(
 	person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c("aut","cre")),
@@ -10,7 +10,8 @@ License: GPL-3
 Depends:
 	glmnet,
 	randomForest,
-	methods
+	methods,
+	caret
 Imports:
 	foreach,
 	doParallel,
