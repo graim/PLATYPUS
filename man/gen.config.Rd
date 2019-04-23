@@ -4,37 +4,56 @@
 \alias{gen.config}
 \title{Generate configuration files for platypus}
 \usage{
-gen.config(view.names, fn.tasks, config.loc = "config",
-  model.type = c("en", "rf", "svm"), delim = ",", delim.v = "\\t",
-  n.iters = 10, ignore.label = "intermediate", nfolds = 10,
-  mtry = NA, ntree = c(500, 1000, 1500, 2000))
+gen.config(view.data, tasks, config.loc = "config",
+  model.type = c("en", "rf", "svm"), view.names = NA,
+  ignore.label = "intermediate")
 }
 \arguments{
-\item{view.names}{List of files containing view feature data}
+\item{view.data}{List of view data matrices. Must be named.}
 
-\item{fn.tasks}{File containing all task labels, one column per task}
+\item{tasks}{File containing all task labels, one column per task}
 
 \item{config.loc}{Where the config files should be stored}
 
 \item{model.type}{Type of classifier to use (select from en, rf, svm)}
 
-\item{delim}{Delimiter for the task file}
-
-\item{delim.v}{Delimiter for the view data file}
-
-\item{n.iters}{Number of iterations to run}
+\item{view.names}{List of files containing view feature data}
 
 \item{ignore.label}{Label to ignore in the task file (default 'intermediate')}
-
-\item{nfolds}{Number of folds to use}
-
-\item{mtry}{For random forest models, what mtry value(s) to use}
-
-\item{ntree}{For random forest models, number of trees to build}
 }
 \value{
 List of config filenames, for use in platypus
 }
 \description{
 Generate configuration files for platypus
+}
+\examples{
+# Create several view/task pairs
+X1 <- matrix(rnorm(10000), nrow=100)
+y1 <- c(rep('MOO',50),rep('OINK',50))
+names(y1) <- paste0('Sample',seq(nrow(X1)))
+rownames(X1) <- paste0('Sample',seq(nrow(X1)))
+X2 <- matrix(rnorm(10000), nrow=100)
+y2 <- c(rep('GROWL',50),rep('RAWR',50))
+names(y2) <- paste0('Sample',seq(nrow(X2)))
+rownames(X2) <- paste0('Sample',seq(nrow(X2)))
+X3 <- matrix(rnorm(10000), nrow=100)
+y3 <- c(rep('PURR',50),rep('HISS',50))
+names(y3) <- paste0('Sample',seq(nrow(X3)))
+rownames(X3) <- paste0('Sample',seq(nrow(X3)))
+
+# Group together view and task data
+view.data <- list(Farm=X1, Lion=X2, Cat=X3)
+tasks     <-  do.call("cbind",list(Task1=y1, Task2=y2, Task3=y3))
+
+# Pretend we loaded this data from some files
+fn.view.names <- list(Farm='Farm.txt', Lion='Lion.txt', Cat='Cat.txt')
+
+# Generate config files
+gen.config(view.data[1], tasks[,1,drop=FALSE], model.type='en',config.loc='.')
+gen.config(view.data, tasks, model.type='en', view.names=fn.view.names,config.loc='.')
+gen.config(view.data, tasks, model.type='en',config.loc='.') 
+gen.config(view.data, tasks, model.type='svm',config.loc='.')
+gen.config(view.data, tasks, model.type='rf',config.loc='.')
+
 }

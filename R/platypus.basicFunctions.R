@@ -4,7 +4,7 @@
 ## TODO: Do we really need to provide this??
 drop.features <- function(dat, k) {
   if(ncol(dat) > k ) {
-    vars <- apply(dat, 2, var)
+    vars <- apply(dat, 2, stats::var)
     vars <- sort(vars, decreasing=TRUE)
     thresh <- vars[k]
     dat <- dat[,names(which(vars>=thresh))]
@@ -103,7 +103,7 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
 load.parameterfile <- function(filename, delim='\t'){
  
   # Load parameters file 
-  param.table <- read.table(filename, sep='\t',header=FALSE, row.names=1)
+  param.table <- utils::read.table(filename, sep='\t',header=FALSE, row.names=1)
   
   # Check the type and create a view object, set type-specific parameters
   type <- param.table["type",1]
@@ -126,7 +126,7 @@ load.parameterfile <- function(filename, delim='\t'){
   if("drop" %in% rownames(param.table)){ view.object$drop <- as.logical(param.table["drop",1]) } # TODO: Remove this option
   if("drop.to" %in% rownames(param.table)){ view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1])) } # TODO: Remove this option
   if("acc" %in% rownames(param.table)){ view.object$acc <- as.numeric(as.character(param.table["acc",1])) }
-  if("data.fn" %in% rownames(param.table)){ view.object$data.matrix <- data.matrix( read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) ) } # TODO: Do we really want to force everything to be numeric???
+  if("data.fn" %in% rownames(param.table)){ view.object$data.matrix <- data.matrix( utils::read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) ) } # TODO: Do we really want to force everything to be numeric???
 
   return(view.object)
 }
@@ -139,7 +139,7 @@ load.data <- function(view.object){
 }
 load.data.ElasticNet <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) )
+  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Elastic Net view',view.object$data.fn))
   
   # drop features
@@ -154,7 +154,7 @@ load.data.ElasticNet <- function(view.object,delim='\t'){
 }
 load.data.RandomForest <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
+  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Random Forest view',view.object$data.fn))
   
   # drop features
@@ -174,7 +174,7 @@ load.data.RandomForest <- function(view.object,delim='\t'){
 }
 load.data.SupportVectorMachine <- function(view.object,delim='\t'){
   # read the matrix from the file
-  mat <- data.matrix( read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
+  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for SVM view',view.object$data.fn))
 
   # drop features
@@ -192,7 +192,7 @@ load.data.SupportVectorMachine <- function(view.object,delim='\t'){
 ## TODO: I updated this to return the full labels matrix, but each fxn will now need to iterate over each column
 load.label.data.old <- function(fn.labs,delim='\t'){
   # read file
-  labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
+  labs <- utils::read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
   # take out 'NA' values - only in cases where ALL labels are NA for a given sample
   labs <- labs[!apply(labs,1,function(x){any(is.na(x))}),,drop=FALSE]
   return(labs)
@@ -201,7 +201,7 @@ load.label.data.old <- function(fn.labs,delim='\t'){
 ## TODO: Keeping for now so I can run old platypus - retire it once we've added mtl
 load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
-  labs <- read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
+  labs <- utils::read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
   # take out 'NA' values
   labs <- labs[which(!(is.na(labs[,classcol.labs]))),,drop=FALSE]
   return(labs)
@@ -278,7 +278,7 @@ view.train.SupportVectorMachine <- function( labels, view.object  ){
   #  install.packages('e1071')
     #library(e1071)
   #}
-  view.object$model <- svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
+  view.object$model <- e1071::svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
                                        kernel=view.object$kernel,  
                                        cost=view.object$cost, 
                                        gamma=view.object$gamma)
@@ -297,7 +297,7 @@ view.predict.ElasticNet <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ? 
+    return( glmnet::predict.cv.glmnet(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ?  # TODO: changed to predict.cv.glmnet but not tested, from predict()
   }
   
   return(as.character(c()))
@@ -308,6 +308,7 @@ view.predict.RandomForest <- function(ids.unlabelled, view.object) {
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
     return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='response')  ) )
+    #return( as.character( randomForest::predict.randomForest(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='response')  ) )
   }
   
   return(as.character(c()))
@@ -317,7 +318,7 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
+    return( as.character( e1071::predict.svm(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
   }
 
   return(as.character(c()))
@@ -401,6 +402,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   preds.model       <- randomForest( labels ~ ., for.model.predictions, ntree=100,replace=TRUE)
   if(flag.debug) { print('Make stacked model predictions') }
   preds.stckd       <- predict(preds.model, predictions, predict.all=TRUE)
+  #preds.stckd       <- randomForest::predict.randomForest(preds.model, predictions, predict.all=TRUE)
   if(flag.debug) { print('Make preds.stckd') }
   preds.stacked.all <- preds.stckd$individual
   if(flag.debug) { print('Make preds.stckd.indiv') }
@@ -440,15 +442,15 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
     print(length(category.majority))
 
     print('TEST.IDS:')
-    print(head(test.ids))
+    print(utils::head(test.ids))
     print('PREDICTIONS:')
-    print(head(predictions))
+    print(utils::head(predictions))
     print('FINAL:')
-    print(head(final))
+    print(utils::head(final))
     print('CATEGORY.ALL:')
-    print(head(category.all))
+    print(utils::head(category.all))
     print('CATEGORY.MAJORITY:')
-    print(head(category.majority))
+    print(utils::head(category.majority))
   }
 
   predictions <- cbind(predictions,final,category.all,category.majority)
@@ -495,15 +497,15 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.label
     print(length(category.majority))
   
     print('TEST.IDS:')
-    print(head(test.ids))
+    print(utils::head(test.ids))
     print('PREDICTIONS:')
-    print(head(predictions))
+    print(utils::head(predictions))
     print('FINAL:')
-    print(head(final))
+    print(utils::head(final))
     print('CATEGORY.ALL:')
-    print(head(category.all))
+    print(utils::head(category.all))
     print('CATEGORY.MAJORITY:')
-    print(head(category.majority))
+    print(utils::head(category.majority))
   }
 
   predictions <- cbind(predictions,final,category.all,category.majority)

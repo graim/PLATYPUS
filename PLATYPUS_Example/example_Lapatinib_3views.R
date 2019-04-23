@@ -8,9 +8,7 @@
 ## Load libraries
 library(devtools)
 #install_github('graim/PLATYPUS')
-build()
-install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/", force=TRUE) 
-library(PLATYPUS)
+	build(); install_local("/mnt/ceph/users/kgraim/PLATYPUS_SSC/PLATYPUS/", force=TRUE); library(PLATYPUS)
 
 ## Baseline view data: TODO 
 
@@ -30,23 +28,23 @@ library(PLATYPUS)
 ######
 
 ## Views to use
-fns.data <- c(
-  '2015-06-20_DrugTargetsExpression.txt', 
-  '2015-07-02_TissueByMetabolicEnzymeExpression.txt', 
-  '2015-09-08_DrugTargetNearestNeighboursPathway_HallmarkAllExpression.txt', 
-  '2015-07-20_AllSummaryMetrics.txt', 
-  'CCLE_expression_5000_featurematrix.tab', 
-  'DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt' 
-)
-fns.data <- file.path('data',fns.data)
+	fns.data <- c(
+			'2015-06-20_DrugTargetsExpression.txt', 
+			'2015-07-02_TissueByMetabolicEnzymeExpression.txt', 
+			'2015-09-08_DrugTargetNearestNeighboursPathway_HallmarkAllExpression.txt', 
+			'2015-07-20_AllSummaryMetrics.txt', 
+			'CCLE_expression_5000_featurematrix.tab', 
+			'DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt' 
+		     )
+	fns.data <- file.path('data',fns.data)
 
 ## Task file - each column is 1 task. Requires 1 or more tasks
-fn.tasks <- 'CCLE_responselabel_binary_3cat_Lapatinib.tab'
-fn.tasks <- file.path('data',fn.tasks)
+	fn.tasks <- 'CCLE_responselabel_binary_3cat_Lapatinib.tab'
+	fn.tasks <- file.path('data',fn.tasks)
 
 ## Generate config files - returns a list of the config filenames for using in platypus calls
-config.files.en <- gen.config(fns.data[1:3], fn.tasks, model.type='en', delim='\t', config.loc='config') # elastic net configs
-config.files.rf <- gen.config(fns.data[4:length(fns.data)], fn.tasks, model.type='rf', delim='\t', config.loc='config') # random forest configs
+	config.files.en <- gen.config(fns.data[1:3], fn.tasks, model.type='en', delim='\t', config.loc='config') # elastic net configs
+	config.files.rf <- gen.config(fns.data[4:length(fns.data)], fn.tasks, model.type='rf', delim='\t', config.loc='config') # random forest configs
 config.files    <- c(config.files.en, config.files.rf)
 
 ###############
@@ -55,7 +53,7 @@ config.files    <- c(config.files.en, config.files.rf)
 
 # rf, rf, rf, en
 # TODO: Update this to have 1 baseline view, 1 interpreted view, 1 RF view, and 1 EN view. Any combo of those things
-config.files <- list('DrugTargets_Lapatinib_configFile.txt','DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt','MetabolicEnzymes_Lapatinib_configFile.txt')
+config.files <- list('DrugTargets_Lapatinib_configFile.txt','DrugTargetPathway_HallmarkPathway_Lapatinib_configFile.txt','MetabolicEnzymes_Lapatinib_configFile.txt','config_en_Lapatinib_2015-07-02_TissueByMetabolicEnzymeExpression.txt')
 config.files <- file.path('config', config.files)
 
 ## Create view from each parameter file and store in a list of views 
@@ -85,6 +83,7 @@ llv.platypus.res <- llv.platypus(view.list=view.list,fn.labs=fn.labs,n.iters=n.i
 ## Call cross validation (CV)
 print('Running cv')
 cv.platypus.res <- cv.platypus(view.list=view.list,fn.labs=fn.labs,n.iters=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
+#cv.platypus.res <- cv.platypus(view.list=view.list,fn.labs=fn.labs,n.iters=n.iters,majority.threshold.percent=m.thresh,output.folder=of.name,expanded.output=TRUE)
 
 ## After running LLV and CV, generate the PLATYPUS performance plots
 ## TODO: R reads these as plot() functions for data types llv and cv. Would like to update my code to make that work!
