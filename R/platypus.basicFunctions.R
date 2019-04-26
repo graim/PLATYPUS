@@ -72,14 +72,13 @@ RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",nt
   return(me)
 }
 
-## TODO: I created this but didn't actually update it or change content from RandomForest object
-SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=c(),acc=0.5,accSD=0) {
+## TODO: unfinished, untested
+SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=c(),acc=0.5,accSD=0,C=1) {
   me <- list(
     param.file = param.file,
     data.matrix = data.matrix,
     data.fn = data.fn,
-#    type = type, 
-#    C = C,
+    C = C,
     model = model,
     acc = acc,
     accSD = accSD
@@ -93,10 +92,11 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
 ## Read in the parameter file for a view and return a view object
 ## TODO: Add in option for view name
 ## TODO: add in SVM models
+## TODO: Add in option for task name
 #' Create a view from a configuration file
 #'
 #' @param filename File containing config information
-#' @param delim Optional delimeter for the file containing view data (not the config file!)
+#' @param delim Optional delimiter for the file containing view data (not the config file!)
 #' @return View object
 #' @keywords platypus
 #' @export
@@ -116,7 +116,10 @@ load.parameterfile <- function(filename, delim='\t'){
     if("mtry" %in% rownames(param.table)){ view.object$mtry <- as.numeric(as.character(param.table["mtry",1])) }
     if("ntree" %in% rownames(param.table)){ view.object$ntree <- as.numeric(as.character(param.table["ntree",1])) }
   } else if(type == 'svm'){
-    stop("Sorry, SVMs are not working yet!")
+    message('SVMs are not tested yet, be warned.')
+    view.object <- SupportVectorMachine(param.file=filename, data.fn=toString(param.table["data.fn",1]))
+    if("C" %in% rownames(param.table)) { view.object$C <- as.numeric(as.character(param.table["ntree",1])) }
+    #stop("Sorry, SVMs are not working yet!")
     ## TODO: implement svm types :)
   } else { 
     stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
@@ -199,6 +202,15 @@ load.label.data.old <- function(fn.labs,delim='\t'){
 }
 ## load the label file
 ## TODO: Keeping for now so I can run old platypus - retire it once we've added mtl
+
+#' Load label data, removing the user-specified labels to ignore
+#' TODO This will eventually go away. Also TODO, this should be removing ignore labels... otherwise why bother having it?
+#'
+#' @param fn.labs File containing outcome labels
+#' @param classcol.labs Optional argument. Which column from the labels file to use for learning
+#' @param b Label class to ignore, if any. Defaults to 'intermediate'
+#' @return data frame containing label data
+#' @export
 load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
   labs <- utils::read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
@@ -233,10 +245,23 @@ get.unique.labels <- function(label.vec,ignore.label){
   return(unique.labels)
 }
 
-## Train one view, given a specific model type
+#' Train one view, given a specific model type
+#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
+#'
+#' @param labels label data
+#' @param view.object A view object
+#' @return Newly re-trained view object
+#' @export
 view.train <- function( labels, view.object ) {
   UseMethod("view.train",view.object)
 }
+#' Train an Elastic Net View
+#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
+#'
+#' @param labels label data
+#' @param view.object A view object
+#' @return Newly re-trained view object
+#' @export
 view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
   
   # Intersect IDs in labels and in the feature data
@@ -244,7 +269,7 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
 
 #    library(glmnet)
   # Reduce number of folds if fewer than 10 samples per fold
-  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'because not enough samples')) }
+  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'folds, because not enough samples')) }
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
                                   ,as.factor(labels[ids,1]), family=view.object$family
                                   ,type.measure=view.object$measure
@@ -253,6 +278,13 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
                                   ,keep=TRUE)
   return(view.object)
 }
+#' Train a Random Forest View
+#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
+#'
+#' @param labels label data
+#' @param view.object A view object
+#' @return Newly re-trained view object
+#' @export
 view.train.RandomForest <- function( labels, view.object  ){
   
   # Intersect IDs in labels and in the feature data
@@ -266,23 +298,24 @@ view.train.RandomForest <- function( labels, view.object  ){
                                      ntree=view.object$ntree )
   return(view.object)
 }
+#' Train Support Vector Machine View
+#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
+#'
+#' @param labels label data
+#' @param view.object A view object
+#' @return Newly re-trained view object
+#' @export
 view.train.SupportVectorMachine <- function( labels, view.object  ){
   ## TODO: UNTESTED
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-#  print( summary( labels[ids,1] ) ) # TODO
-
-  # Train model
-  #if(!require(e1071)) {
-  #  install.packages('e1071')
-    #library(e1071)
-  #}
-  view.object$model <- e1071::svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
-                                       kernel=view.object$kernel,  
-                                       cost=view.object$cost, 
-                                       gamma=view.object$gamma)
-
+# TODO: caret uses kernlab for svmRadialCost, so pick a different kernel. Oops ;)
+#  view.object$model <- e1071::svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
+#                                       kernel=view.object$kernel)#, TODO: cost not implemented yet  
+#                                       cost=view.object$cost)#,  TODO: gamma not implemented yet
+#                                       gamma=view.object$gamma)
+  view.object$model <- kernlab::ksvm(x = as.matrix(view.object$data.matrix[ids,]), y = labels[ids,1], kernel = "rbfdot", C = view.object$C) # TODO: copied over from caret for now. 
   return(view.object)
 }
 
@@ -318,7 +351,8 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
-    return( as.character( e1071::predict.svm(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
+    #return( as.character( e1071::predict.svm(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
+    return( as.character( kernlab::predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE]) ) )
   }
 
   return(as.character(c()))

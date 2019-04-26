@@ -7,7 +7,7 @@
 cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
   n.iters = 100, majority.threshold.percent = 100,
   expanded.output = FALSE, updating = FALSE,
-  ignore.label = "intermediate", parallel = FALSE, num.cores = 25,
+  ignore.label = "intermediate", parallel = FALSE,
   output.folder = NA)
 }
 \arguments{
@@ -17,7 +17,7 @@ cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
 
 \item{classcol.labs}{Which column from the labels file to use for learning}
 
-\item{cv.folds}{number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10}
+\item{cv.folds}{number of folds for label learning validation (similar to cross validation folds), default=10}
 
 \item{n.iters}{Maximal number of iterations for each platypus run, default=100}
 
@@ -30,8 +30,6 @@ cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
 \item{ignore.label}{Label class to ignore, if any. Defaults to 'intermediate'}
 
 \item{parallel}{Whether or not to run in parallel mode.}
-
-\item{num.cores}{The number of cores to use. Enables parallelization.}
 
 \item{output.folder}{Name of the folder where output is stored.}
 }

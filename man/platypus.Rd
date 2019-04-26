@@ -5,7 +5,7 @@
 \title{platypus multiview learning}
 \usage{
 platypus(fn.labs, view.list, b = "intermediate", i = 100, m = 100,
-  e = FALSE, u = FALSE)
+  e = FALSE, u = FALSE, classcol.labs = 1)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}
@@ -21,6 +21,8 @@ platypus(fn.labs, view.list, b = "intermediate", i = 100, m = 100,
 \item{e}{Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE}
 
 \item{u}{Updating the accuracies of the single views in each iteration, default=FALSE}
+
+\item{classcol.labs}{Optional argument. Which column from the labels file to use for learning}
 }
 \value{
 final.result.list

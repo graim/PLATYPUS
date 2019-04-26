@@ -14,48 +14,26 @@
 #' @param view.list List of view objects 
 #' @param fn.labs File containing outcome labels
 #' @param classcol.labs Which column from the labels file to use for learning
-#' @param cv.folds number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
+#' @param cv.folds number of folds for label learning validation (similar to cross validation folds), default=10
 #' @param n.iters Maximal number of iterations for each platypus run, default=100
 #' @param majority.threshold.percent Percent agreement required to learn a sample's class label, default=100
 #' @param expanded.output Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param updating Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param ignore.label Label class to ignore, if any. Defaults to 'intermediate'
 #' @param parallel Whether or not to run in parallel mode.
-#' @param num.cores The number of cores to use. Enables parallelization.
 #' @param output.folder Name of the folder where output is stored.
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export
-cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,output.folder=NA) {
+cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,output.folder=NA) {
  
   ## Set debug flag on/off for testing
   #flag.debug <- TRUE 
   flag.debug <- FALSE
   if(flag.debug) { print('Debug is on') }
 
-
-  ## Load libraries, install if not already installed
-  ## TODO: Move this into the package installation, then just load libraries normally
-# require(foreach)
-#  require(methods)
-
-#  if(!require(foreach)) {
-#    install.packages('foreach')
-#   library(foreach) 
-#  }
 #  requireNamespace(methods) # TODO untested # TODO untested
   
-  # set parallel background if parallel flag is set
-#  if(parallel){
-    ## TODO: Move this into the package installation, then just load libraries normally
- #   if(!require(doParallel)) {
- #     install.packages('doParallel')
-  #    library(doParallel)
-  #  }
-#    cl <- makeCluster(num.cores,outfile="")
-#    registerDoParallel(cl, cores = num.cores)
-#  }
-
   ## Create output directory if it doesn't already exist
   if(!dir.exists(output.folder)) { dir.create(output.folder) }  
 
@@ -258,7 +236,8 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
     
   } # end if(expanded.output)
 
-  return( list(fold.accuracy=accuracy.cvfolds, labelling.matrix=labelling.matrix.cvlist, labelling.matrices.views=labelling.matrices.views.cvlist) )
+  if(expanded.output) return( list(fold.accuracy=accuracy.cvfolds, labelling.matrix=labelling.matrix.cvlist, labelling.matrices.views=labelling.matrices.views.cvlist) )
+  else return( list(fold.accuracy=accuracy.cvfolds, labelling.matrix=NA, labelling.matrices.views=NA ) )
 
 } # end cv.platypus
 

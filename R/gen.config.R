@@ -23,6 +23,7 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
   } else if(x$Model=='svmRadialCost') { 
     base::write(paste('type','svm', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('C',x$C, sep='\t'), file=fn.config, append=TRUE)
+    base::write(paste('kernel','svmRadialCost', sep='\t'), file=fn.config, append=TRUE) # TODO: allow different kernel types
   } else { message('Model type unknown to platypus.') } #TODO: stop not message?
 #
 }
@@ -35,28 +36,31 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
 #' @param model.type Type of classifier to use (select from en, rf, svm)
 #' @param view.names List of files containing view feature data
 #' @param ignore.label Label to ignore in the task file (default 'intermediate')
+#' @param store Whether to store configs to file or not. Default FALSE.
 #'
 #' @examples
-#' # Create several view/task pairs
+# Create several view/task pairs, including some missing labels
 #' X1 <- matrix(rnorm(10000), nrow=100)
-#' y1 <- c(rep('MOO',50),rep('OINK',50))
-#' names(y1) <- paste0('Sample',seq(nrow(X1)))
 #' rownames(X1) <- paste0('Sample',seq(nrow(X1)))
+#' colnames(X1) <- paste0('Feature',seq(ncol(X1)))
 #' X2 <- matrix(rnorm(10000), nrow=100)
-#' y2 <- c(rep('GROWL',50),rep('RAWR',50))
-#' names(y2) <- paste0('Sample',seq(nrow(X2)))
 #' rownames(X2) <- paste0('Sample',seq(nrow(X2)))
+#' colnames(X2) <- paste0('Feature',seq(ncol(X2)))
 #' X3 <- matrix(rnorm(10000), nrow=100)
-#' y3 <- c(rep('PURR',50),rep('HISS',50))
-#' names(y3) <- paste0('Sample',seq(nrow(X3)))
 #' rownames(X3) <- paste0('Sample',seq(nrow(X3)))
+#' colnames(X3) <- paste0('Feature',seq(ncol(X3)))
+#' y <- sample(c('MOO','OINK',NA),100,replace=TRUE)
+#' names(y) <- paste0('Sample',seq(max(nrow(X1), nrow(X2),nrow(X3)))) # TODO: should cover all samples is all matrices
 #' 
 #' # Group together view and task data
 #' view.data <- list(Farm=X1, Lion=X2, Cat=X3)
-#' tasks     <-  do.call("cbind",list(Task1=y1, Task2=y2, Task3=y3))
+#' tasks <- as.data.frame(y)
 #' 
 #' # Pretend we loaded this data from some files
-#' fn.view.names <- list(Farm='Farm.txt', Lion='Lion.txt', Cat='Cat.txt')
+#' fn.view.names <- list(Farm='Farm.tsv', Lion='Lion.tsv', Cat='Cat.tsv')
+#' 
+#' # Generate config files
+#' configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config') # If the data files don't already exist, use this
 #' 
 #' # Generate config files
 #' gen.config(view.data[1], tasks[,1,drop=FALSE], model.type='en',config.loc='.')
@@ -69,7 +73,7 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
 #'
 #' @export
 #gen.config <- function(view.names, fn.tasks, config.loc='config', model.type=c('en','rf','svm'), delim=',', delim.v='\t', n.iters=10, ignore.label='intermediate', nfolds=10, mtry=NA, ntree=c(500,1000,1500,2000)) {
-gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en','rf','svm'), view.names=NA, ignore.label='intermediate') {
+gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en','rf','svm'), view.names=NA, ignore.label='intermediate', store=FALSE) {
 
 ## Goals:
 ## view.data is list of data frames (data)
@@ -109,13 +113,13 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
     ## Load the view data
 #    X <- utils::read.table(v,sep=delim.v, header=TRUE, row.names=1,check.names=FALSE,stringsAsFactors=FALSE)
     X <- view.data[[v]]
-    X <- X[stats::complete.cases(X),]
 
     ## If view data filenames provided, use those. Otherwise store data to file in same directory as config files, and use that location
+    ## TODO: Only store data files if user requests it? If we do that, need to figure out how to store in config file :/
     if(is.na(view.names[[v]])) {
       message('Location of this view data file is not provided, therefore storing data matrix to file in same location as configs.')
       v <- paste0(v,'.tsv')
-      utils::write.table(X, file=v , sep="\t",row.names=TRUE, col.names=TRUE, quote=FALSE)
+      utils::write.table(X, file=v , sep="\t",row.names=TRUE, col.names=TRUE, quote=FALSE) #TODO: Only store files if user says to do so
     } else {
       v <- view.names[[v]]
     }
@@ -138,33 +142,15 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
 
 
       ## Parameter sweep based on task type
-      if(model.type=='en') {
-        #res <- single.elasticNet.predictor( X, y, alpha = alpha.seq, iterations = n.iters, nfolds=nfolds)
-        res <- single.predictor(X,y,model='en')
-        print(res)
-        write.config(res, v, task, fn.config=fn.config)
-        #write.config.en(res, v, task, fn.config=fn.config)
-      } else if(model.type=='rf') {
-#        if(is.na(mtry)) { mtry <- seq(ceiling(sqrt(ncol(X)))) } # If mtry not provided, use this default
-        #res <- single.randomForest.predictor(X, y, mtry=seq(ceiling(sqrt(ncol(X)))) )
-        res <- single.predictor(X,y,model='rf')
-        print(res)
-        write.config(res, v, task, fn.config=fn.config)
-        #write.config(res, v, fn.config=fn.config)
-        #write.config.rf(res, v, fn.config=fn.config)
-      } else if(model.type=='svm') {
-        #res <- single.svm.predictor( X, y )
-        res <- single.predictor(X,y,model='svm')
-        print(res)
-        #write.config(res, fn.config=fn.config)
-        write.config(res, v, task, fn.config=fn.config)
-        #write.config.svm(res, fn.config=fn.config)
+      res <- single.predictor(X[names(y),],y,model=model.type)
+      if(store) {
+         write.config(res, v, task, fn.config=fn.config)
       }
-      rm(res) 
+      rm(res) # TODO: instead of deleting, add to list and return object
       
     } # end for tasks
   } # end for views
 
   print('Finished, success!')
-  return(unlist(fns.config))
+  return(unlist(fns.config)) # TODO: Change this to return view objects, not filenames. Goal is to make filenames optional.
 }

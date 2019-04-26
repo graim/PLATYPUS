@@ -35,8 +35,8 @@ single.predictor <- function(X,y,model,ignore.label='intermediate') {
 
   ## Remove unlabeled samples and those with missing data
   ## Drop to set of samples in both labels and features data
-  y   <- y[y!=ignore.label] # remove label user wants to ignore
   y   <- y[stats::complete.cases(y)]
+  y   <- y[y!=ignore.label] # remove label user wants to ignore
   X   <- X[stats::complete.cases(X),,drop=F]
   X   <- X[intersect(rownames(X),names(y)),,drop=F]
   y   <- y[intersect(rownames(X),names(y))]
@@ -50,7 +50,7 @@ single.predictor <- function(X,y,model,ignore.label='intermediate') {
 #  }
  
   ## Parameter sweep and return 'best' model
-  res.model <- caret::train(x = t(X), y = y, method=model, preProcess = 'center', metric = 'Accuracy', trControl = caret::trainControl(method = 'repeatedcv', number = 10))
+  res.model <- caret::train(x = X, y = y, method=model, preProcess = 'center', metric = 'Accuracy', trControl = caret::trainControl(method = 'repeatedcv', number = 10))
   res <- res.model$results[which(res.model$results$Accuracy == max(res.model$results$Accuracy))[1],]
   res$Model <- model # For gen.config use
   return( res )

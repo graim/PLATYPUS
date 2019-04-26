@@ -9,7 +9,7 @@ load.parameterfile(filename, delim = "\\t")
 \arguments{
 \item{filename}{File containing config information}
 
-\item{delim}{Optional delimeter for the file containing view data (not the config file!)}
+\item{delim}{Optional delimiter for the file containing view data (not the config file!)}
 }
 \value{
 View object

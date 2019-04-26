@@ -28,26 +28,27 @@ List of config filenames, for use in platypus
 Generate configuration files for platypus
 }
 \examples{
-# Create several view/task pairs
 X1 <- matrix(rnorm(10000), nrow=100)
-y1 <- c(rep('MOO',50),rep('OINK',50))
-names(y1) <- paste0('Sample',seq(nrow(X1)))
 rownames(X1) <- paste0('Sample',seq(nrow(X1)))
+colnames(X1) <- paste0('Feature',seq(ncol(X1)))
 X2 <- matrix(rnorm(10000), nrow=100)
-y2 <- c(rep('GROWL',50),rep('RAWR',50))
-names(y2) <- paste0('Sample',seq(nrow(X2)))
 rownames(X2) <- paste0('Sample',seq(nrow(X2)))
+colnames(X2) <- paste0('Feature',seq(ncol(X2)))
 X3 <- matrix(rnorm(10000), nrow=100)
-y3 <- c(rep('PURR',50),rep('HISS',50))
-names(y3) <- paste0('Sample',seq(nrow(X3)))
 rownames(X3) <- paste0('Sample',seq(nrow(X3)))
+colnames(X3) <- paste0('Feature',seq(ncol(X3)))
+y <- sample(c('MOO','OINK',NA),100,replace=TRUE)
+names(y) <- paste0('Sample',seq(max(nrow(X1), nrow(X2),nrow(X3)))) # TODO: should cover all samples is all matrices
 
 # Group together view and task data
 view.data <- list(Farm=X1, Lion=X2, Cat=X3)
-tasks     <-  do.call("cbind",list(Task1=y1, Task2=y2, Task3=y3))
+tasks <- as.data.frame(y)
 
 # Pretend we loaded this data from some files
-fn.view.names <- list(Farm='Farm.txt', Lion='Lion.txt', Cat='Cat.txt')
+fn.view.names <- list(Farm='Farm.tsv', Lion='Lion.tsv', Cat='Cat.tsv')
+
+# Generate config files
+configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config') # If the data files don't already exist, use this
 
 # Generate config files
 gen.config(view.data[1], tasks[,1,drop=FALSE], model.type='en',config.loc='.')

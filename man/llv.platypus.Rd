@@ -7,14 +7,14 @@
 llv.platypus(view.list, fn.labs, llv.folds = 10, n.iters = 100,
   majority.threshold.percent = 100, expanded.output = TRUE,
   updating = FALSE, ignore.label = "intermediate", parallel = FALSE,
-  num.cores = 25, classcol.labs = 1, output.folder = NA)
+  classcol.labs = 1, output.folder = NA)
 }
 \arguments{
 \item{view.list}{List of view objects}
 
 \item{fn.labs}{File containing outcome labels}
 
-\item{llv.folds}{number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10}
+\item{llv.folds}{number of folds for label learning validation (similar to cross validation folds), default=10}
 
 \item{n.iters}{Maximal number of iterations for each platypus run, default=100}
 
@@ -27,8 +27,6 @@ llv.platypus(view.list, fn.labs, llv.folds = 10, n.iters = 100,
 \item{ignore.label}{Label class to ignore, if any. Defaults to 'intermediate'}
 
 \item{parallel}{Whether or not to run in parallel mode TODO remove? numcores enables anyway}
-
-\item{num.cores}{The number of cores to use. Enables parallelization.}
 
 \item{classcol.labs}{Column containing the task label data. Default 1.}
 

@@ -3,34 +3,24 @@
 #' Similar to cross-fold validation, label learning validation for platypus is used to help identify the number of iterations to run when training a platypus model, so that label learning is most effective.
 #' @param view.list List of view objects 
 #' @param fn.labs File containing outcome labels
-#' @param llv.folds number of folds for label learning validation (similar to cross validation folds), eg. 5, default=10
+#' @param llv.folds number of folds for label learning validation (similar to cross validation folds), default=10
 #' @param n.iters Maximal number of iterations for each platypus run, default=100
 #' @param majority.threshold.percent Percent agreement required to learn a sample's class label, default=100
 #' @param expanded.output Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param updating Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param ignore.label Label class to ignore, if any. Defaults to 'intermediate'
 #' @param parallel Whether or not to run in parallel mode TODO remove? numcores enables anyway
-#' @param num.cores The number of cores to use. Enables parallelization.
 #' @param classcol.labs Column containing the task label data. Default 1.
 #' @param output.folder Name of the folder where output is stored.
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export 
-llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,num.cores=25,classcol.labs=1,output.folder=NA) {
+llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,classcol.labs=1,output.folder=NA) {
   
   ## Set debug flag on/off for testing - currently we don't use this
   #flag.debug <- TRUE
   flag.debug <- FALSE
   if(flag.debug) { print('Debug is on') }
-
-  ## TODO: Don't load libraries this way :)
-#  require(foreach)
-#  require(methods)
-#  if(parallel) {
-#    require(doParallel)
-#    cl <- makeCluster(num.cores,outfile="")
-#    registerDoParallel(cl, cores = num.cores)
-#  }
 
   print(paste('Ignoring labels for samples labelled:',ignore.label))
 

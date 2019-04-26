@@ -24,25 +24,26 @@
 #' @param m Percent agreement required to learn a sample's class label, default=100
 #' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param u Updating the accuracies of the single views in each iteration, default=FALSE
+#' @param classcol.labs Optional argument. Which column from the labels file to use for learning
 #' @return final.result.list
 #' @keywords platypus
 #' @import glmnet
 #' @import randomForest 
 #' @import methods
 #' @export
-platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE,u=FALSE) {
+platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE,u=FALSE,classcol.labs=1) {
 #platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, e=FALSE,u=FALSE,expanded.output=FALSE) {
 #platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
 
   ## Debug flag can be manually activated, for testing purposes 
-  #flag.debug <- TRUE
-  flag.debug <- FALSE 
+  flag.debug <- TRUE
+  #flag.debug <- FALSE 
   if(flag.debug) { print('Debug is on') }
 
   ## Set more readable names
   majority.threshold.percent<-m
   n.iters<-i
-  classcol.labs <- 1 # The column containing the output labels. Often is the first column, not including rownames
+  #classcol.labs <- 1 # The column containing the output labels. Often is the first column, not including rownames
   updating <- u
   expanded.output <- e
   ignore.label <- b
@@ -51,13 +52,15 @@ platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE
   #view.list <- lapply(fn.views, load.parameterfile ) # moved this outside platypus so it takes in already loaded view list
 
   ## Load the data for labs and each view
-  labs <- load.label.data(fn.labs,classcol.labs)
+#  labs <- load.label.data(fn.labs,classcol.labs)
+  labs <- utils::read.table(fn.labs, sep='\t',header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE)
   if(flag.debug) {print(table(labs[,classcol.labs]))}
 
-  # Get the the two labels
-  unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
+  # Get the two unique labels, ignoring the ignore.label TODO minor changes to remove fxn for now
+  unique.labels <- setdiff(unique(labs[,classcol.labs]),ignore.label)
+  #unique.labels <- get.unique.labels(labs[,classcol.labs],ignore.label)
   #view.list <- lapply(view.list, load.data) # moved this outside platypus so it takes in already loaded view list
-  if(flag.debug) { print(lapply(view.list, function(x){length(intersect(labs,rownames(x)))} ))  } 
+  if(flag.debug) { print(lapply(view.list, function(x){length(intersect(rownames(labs),rownames(x$data.matrix)))} ))  } 
 
   ## Take all IDs for each data type
   all.ids <- unique( unlist(lapply(view.list, function(x) {rownames(x$data.matrix)} )) )
