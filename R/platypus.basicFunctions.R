@@ -205,6 +205,7 @@ load.label.data.old <- function(fn.labs,delim='\t'){
 
 #' Load label data, removing the user-specified labels to ignore
 #' TODO This will eventually go away. Also TODO, this should be removing ignore labels... otherwise why bother having it?
+#' TODO Need to remove ignore.label factor level from the data, if it's present :)
 #'
 #' @param fn.labs File containing outcome labels
 #' @param classcol.labs Optional argument. Which column from the labels file to use for learning

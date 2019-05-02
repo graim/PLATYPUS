@@ -6,7 +6,7 @@
 \usage{
 gen.config(view.data, tasks, config.loc = "config",
   model.type = c("en", "rf", "svm"), view.names = NA,
-  ignore.label = "intermediate")
+  ignore.label = "intermediate", store = FALSE)
 }
 \arguments{
 \item{view.data}{List of view data matrices. Must be named.}
@@ -20,6 +20,8 @@ gen.config(view.data, tasks, config.loc = "config",
 \item{view.names}{List of files containing view feature data}
 
 \item{ignore.label}{Label to ignore in the task file (default 'intermediate')}
+
+\item{store}{Whether to store configs to file or not. Default FALSE.}
 }
 \value{
 List of config filenames, for use in platypus
