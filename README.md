@@ -1,3 +1,5 @@
+[![CRAN](http://www.r-pkg.org/badges/version/PLATYPUS)](https://cran.r-project.org/package=PLATYPUS)
+
 # PLATYPUS
 ### Progressive LAbel Training bY Predicting Unlabeled Samples
 A multiple view learning framework for cancer drug sensitivity prediction.
