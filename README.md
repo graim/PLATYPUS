@@ -1,4 +1,8 @@
-[![CRAN](http://www.r-pkg.org/badges/version/PLATYPUS)](https://cran.r-project.org/package=PLATYPUS)
+<!-- badges: start -->
+  [![CRAN](http://www.r-pkg.org/badges/version/PLATYPUS)](https://cran.r-project.org/package=PLATYPUS)
+  [![Travis build status](https://travis-ci.org/graim/PLATYPUS.svg?branch=master)](https://travis-ci.org/graim/PLATYPUS)
+<!-- badges: end -->
+
 
 # PLATYPUS
 ### Progressive LAbel Training bY Predicting Unlabeled Samples
