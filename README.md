@@ -1,6 +1,5 @@
 <!-- badges: start -->
   [![CRAN]( http://www.r-pkg.org/badges/version-last-release/PLATYPUS)](https://cran.r-project.org/package=PLATYPUS)
- http://cranlogs.r-pkg.org/badges/{summary}/{package} 
   [![Travis build status](https://travis-ci.org/graim/PLATYPUS.svg?branch=master)](https://travis-ci.org/graim/PLATYPUS)
 <!-- badges: end -->
 
