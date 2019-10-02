@@ -17,6 +17,7 @@
 #' @param cv.folds number of folds for label learning validation (similar to cross validation folds), default=10
 #' @param n.iters Maximal number of iterations for each platypus run, default=100
 #' @param majority.threshold.percent Percent agreement required to learn a sample's class label, default=100
+#' @param nfolds Number of cross-validation folds
 #' @param expanded.output Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param updating Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param ignore.label Label class to ignore, if any. Defaults to 'intermediate'
@@ -25,7 +26,7 @@
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export
-cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,output.folder=NA) {
+cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=100,majority.threshold.percent=100,nfolds=10, expanded.output=FALSE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,output.folder=NA) {
  
   ## Set debug flag on/off for testing
   #flag.debug <- TRUE 
@@ -78,7 +79,7 @@ cv.platypus <- function(view.list,fn.labs,classcol.labs=1,cv.folds=10,n.iters=10
     if(flag.debug) { print(table(labs.reduced)) }
  
     # get platypus result list
-    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating,b=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating,b=ignore.label,nfolds=nfolds)
     #platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating,ignore.label=ignore.label)
  
     # TODO: THIS NEXT CODE BLOCK IS THE BROKEN BIT FOR SSC EXAMPLE

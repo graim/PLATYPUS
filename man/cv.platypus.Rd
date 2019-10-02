@@ -5,7 +5,7 @@
 \title{k-fold cross validation for platypus}
 \usage{
 cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
-  n.iters = 100, majority.threshold.percent = 100,
+  n.iters = 100, majority.threshold.percent = 100, nfolds = 10,
   expanded.output = FALSE, updating = FALSE,
   ignore.label = "intermediate", parallel = FALSE,
   output.folder = NA)
@@ -22,6 +22,8 @@ cv.platypus(view.list, fn.labs, classcol.labs = 1, cv.folds = 10,
 \item{n.iters}{Maximal number of iterations for each platypus run, default=100}
 
 \item{majority.threshold.percent}{Percent agreement required to learn a sample's class label, default=100}
+
+\item{nfolds}{Number of cross-validation folds}
 
 \item{expanded.output}{Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE}
 

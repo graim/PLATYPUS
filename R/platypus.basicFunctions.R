@@ -239,12 +239,11 @@ view.train <- function( labels, view.object, nfolds=10 ) {
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
   # Reduce number of folds if fewer than 10 samples per fold
-  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'folds, because not enough samples')) }
+  if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('WARNING: Using',nfolds,'folds, because not enough samples')) }
 
   UseMethod("view.train",view.object)
 }
 view.train.ElasticNet <- function(labels, view.object, nfolds){
-  
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
                                   ,as.factor(labels[ids,1]), family=view.object$family
                                   ,type.measure=view.object$measure
@@ -276,12 +275,12 @@ view.train.SupportVectorMachine <- function( labels, view.object, nfolds ){
 
 ## Take a trained view and new labels, return predictions
 view.predict <- function(ids.unlabelled, view.object) {
+  # Intersect IDs in labels and in the feature data
+  ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   UseMethod("view.predict",view.object)
 }
 view.predict.ElasticNet <- function(ids.unlabelled, view.object) {
   
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
     return( glmnet::predict.cv.glmnet(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ?  # TODO: changed to predict.cv.glmnet but not tested, from predict()
   }
@@ -289,9 +288,6 @@ view.predict.ElasticNet <- function(ids.unlabelled, view.object) {
   return(as.character(c()))
 }
 view.predict.RandomForest <- function(ids.unlabelled, view.object) {
-  
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
     return( as.character( predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='response')  ) )
     #return( as.character( randomForest::predict.randomForest(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='response')  ) )
@@ -301,8 +297,6 @@ view.predict.RandomForest <- function(ids.unlabelled, view.object) {
 }
 view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
   ## TODO: UNTESTED
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(ids.unlabelled,rownames(view.object$data.matrix))
   if(length(ids) > 0){
     #return( as.character( e1071::predict.svm(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
     return( as.character( kernlab::predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE]) ) )

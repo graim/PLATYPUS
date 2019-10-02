@@ -6,6 +6,7 @@
 #' @param llv.folds number of folds for label learning validation (similar to cross validation folds), default=10
 #' @param n.iters Maximal number of iterations for each platypus run, default=100
 #' @param majority.threshold.percent Percent agreement required to learn a sample's class label, default=100
+#' @param nfolds Number of cross-validation folds
 #' @param expanded.output Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param updating Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param ignore.label Label class to ignore, if any. Defaults to 'intermediate'
@@ -15,7 +16,7 @@
 #' @return A list containing fold.accuracy, labelling.matrix,labelling.matrices.views
 #' @keywords platypus
 #' @export 
-llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.threshold.percent=100,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,classcol.labs=1,output.folder=NA) {
+llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.threshold.percent=100,nfolds=10,expanded.output=TRUE,updating=FALSE,ignore.label='intermediate',parallel=FALSE,classcol.labs=1,output.folder=NA) {
   
   ## Set debug flag on/off for testing - currently we don't use this
   #flag.debug <- TRUE
@@ -59,7 +60,7 @@ llv.platypus <- function(view.list,fn.labs,llv.folds=10,n.iters=100,majority.thr
     utils::write.table(labs.reduced, file= fn.labels.reduced, sep="\t",row.names=T, col.names=T, quote=FALSE)
     
     # get platypus result list
-    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating, b=ignore.label)
+    platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,e=expanded.output,u=updating, b=ignore.label,nfolds=nfolds)
     #platypus.result <- platypus(view.list=view.list, fn.labs=fn.labels.reduced, i=n.iters, m=majority.threshold.percent,expanded.output=expanded.output,updating=updating, ignore.label=ignore.label)
     
     ## Calculate final ll-performance

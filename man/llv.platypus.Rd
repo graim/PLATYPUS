@@ -5,9 +5,10 @@
 \title{Label learning validation}
 \usage{
 llv.platypus(view.list, fn.labs, llv.folds = 10, n.iters = 100,
-  majority.threshold.percent = 100, expanded.output = TRUE,
-  updating = FALSE, ignore.label = "intermediate", parallel = FALSE,
-  classcol.labs = 1, output.folder = NA)
+  majority.threshold.percent = 100, nfolds = 10,
+  expanded.output = TRUE, updating = FALSE,
+  ignore.label = "intermediate", parallel = FALSE, classcol.labs = 1,
+  output.folder = NA)
 }
 \arguments{
 \item{view.list}{List of view objects}
@@ -19,6 +20,8 @@ llv.platypus(view.list, fn.labs, llv.folds = 10, n.iters = 100,
 \item{n.iters}{Maximal number of iterations for each platypus run, default=100}
 
 \item{majority.threshold.percent}{Percent agreement required to learn a sample's class label, default=100}
+
+\item{nfolds}{Number of cross-validation folds}
 
 \item{expanded.output}{Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE}
 
