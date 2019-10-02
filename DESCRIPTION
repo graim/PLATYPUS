@@ -1,5 +1,5 @@
 Package: PLATYPUS
-Version: 0.2
+Version: 0.3
 Title: Multiple view and task learning
 Authors@R: c(
 	person("Kiley", "Graim", email="kgraim@flatironinstitute.org", role=c("aut","cre")),

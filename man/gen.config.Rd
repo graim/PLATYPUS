@@ -40,7 +40,7 @@ X3 <- matrix(rnorm(10000), nrow=100)
 rownames(X3) <- paste0('Sample',seq(nrow(X3)))
 colnames(X3) <- paste0('Feature',seq(ncol(X3)))
 y <- sample(c('MOO','OINK',NA),100,replace=TRUE)
-names(y) <- paste0('Sample',seq(max(nrow(X1), nrow(X2),nrow(X3)))) # TODO: should cover all samples is all matrices
+names(y) <- paste0('Sample',seq(max(nrow(X1), nrow(X2),nrow(X3))))
 
 # Group together view and task data
 view.data <- list(Farm=X1, Lion=X2, Cat=X3)

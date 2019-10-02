@@ -243,24 +243,16 @@ get.unique.labels <- function(label.vec,ignore.label){
 #' @return Newly re-trained view object
 #' @export
 view.train <- function( labels, view.object, nfolds=10 ) {
-  UseMethod("view.train",view.object)
-}
-#' Train an Elastic Net View
-#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
-#'
-#' @param labels label data
-#' @param view.object A view object
-#' @param nfolds Number of cross-validation folds
-#' @return Newly re-trained view object
-#' @export
-view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
-  
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
 
-#    library(glmnet)
   # Reduce number of folds if fewer than 10 samples per fold
   if(length(ids)/nfolds < 10) { nfolds <- floor(length(ids)/10); print(paste('Using',nfolds,'folds, because not enough samples')) }
+
+  UseMethod("view.train",view.object)
+}
+view.train.ElasticNet <- function(labels, view.object, ... ){
+  
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
                                   ,as.factor(labels[ids,1]), family=view.object$family
                                   ,type.measure=view.object$measure
@@ -269,38 +261,16 @@ view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){
                                   ,keep=TRUE)
   return(view.object)
 }
-#' Train a Random Forest View
-#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
-#'
-#' @param labels label data
-#' @param view.object A view object
-#' @return Newly re-trained view object
-#' @export
-view.train.RandomForest <- function( labels, view.object  ){
+view.train.RandomForest <- function( labels, view.object, nfolds=10 ){
   
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
-
-  # Train model
-  #  library(randomForest)
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
                                      mtry=view.object$mtry, 
                                      ntree=view.object$ntree )
   return(view.object)
 }
-#' Train Support Vector Machine View
-#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
-#'
-#' @param labels label data
-#' @param view.object A view object
-#' @return Newly re-trained view object
-#' @export
-view.train.SupportVectorMachine <- function( labels, view.object  ){
+view.train.SupportVectorMachine <- function( labels, view.object, nfolds=10 ){
   ## TODO: UNTESTED
-  # Intersect IDs in labels and in the feature data
-  ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
-
 # TODO: caret uses kernlab for svmRadialCost, so pick a different kernel. Oops ;)
 #  view.object$model <- e1071::svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
 #                                       kernel=view.object$kernel)#, TODO: cost not implemented yet  
