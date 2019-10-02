@@ -5,7 +5,7 @@
 \title{platypus multiview learning}
 \usage{
 platypus(fn.labs, view.list, b = "intermediate", i = 100, m = 100,
-  e = FALSE, u = FALSE, classcol.labs = 1)
+  e = FALSE, u = FALSE, classcol.labs = 1, nfolds = 10)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}
@@ -23,6 +23,8 @@ platypus(fn.labs, view.list, b = "intermediate", i = 100, m = 100,
 \item{u}{Updating the accuracies of the single views in each iteration, default=FALSE}
 
 \item{classcol.labs}{Optional argument. Which column from the labels file to use for learning}
+
+\item{nfolds}{Number of cross-validation folds}
 }
 \value{
 final.result.list

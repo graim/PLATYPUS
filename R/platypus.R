@@ -25,15 +25,14 @@
 #' @param e Expanded output: returned result list contains a list of trained views after each iteration, default=FALSE
 #' @param u Updating the accuracies of the single views in each iteration, default=FALSE
 #' @param classcol.labs Optional argument. Which column from the labels file to use for learning
+#' @param nfolds Number of cross-validation folds
 #' @return final.result.list
 #' @keywords platypus
 #' @import glmnet
 #' @import randomForest 
 #' @import methods
 #' @export
-platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE,u=FALSE,classcol.labs=1) {
-#platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, e=FALSE,u=FALSE,expanded.output=FALSE) {
-#platypus <- function(fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE) {
+platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE,u=FALSE,classcol.labs=1, nfolds=10) {
 
   ## Debug flag can be manually activated, for testing purposes 
   flag.debug <- TRUE
@@ -48,9 +47,6 @@ platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE
   expanded.output <- e
   ignore.label <- b
   
-  ## Create view from each parameter file and store in a list of views 
-  #view.list <- lapply(fn.views, load.parameterfile ) # moved this outside platypus so it takes in already loaded view list
-
   ## Load the data for labs and each view
 #  labs <- load.label.data(fn.labs,classcol.labs)
   labs <- utils::read.table(fn.labs, sep='\t',header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE)
@@ -125,7 +121,7 @@ platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE
     }
     
     ## Train each view
-    view.list <- lapply(view.list, function(x) { view.train(labels,x) } )
+    view.list <- lapply(view.list, function(x) { view.train(labels,x,nfolds=nfolds) } )
     
     ## Test on the unknown labels
     predictions <- matrix(data=NA, nrow=length(ids.unlabelled), ncol=length(view.list),dimnames=list(ids.unlabelled, seq(length(view.list))))

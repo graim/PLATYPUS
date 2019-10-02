@@ -234,14 +234,6 @@ get.unique.labels <- function(label.vec,ignore.label){
   return(unique.labels)
 }
 
-#' Train one view, given a specific model type
-#' TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?
-#'
-#' @param labels label data
-#' @param view.object A view object
-#' @param nfolds Number of cross-validation folds
-#' @return Newly re-trained view object
-#' @export
 view.train <- function( labels, view.object, nfolds=10 ) {
   # Intersect IDs in labels and in the feature data
   ids <- intersect(rownames(labels),rownames(view.object$data.matrix))
@@ -251,7 +243,7 @@ view.train <- function( labels, view.object, nfolds=10 ) {
 
   UseMethod("view.train",view.object)
 }
-view.train.ElasticNet <- function(labels, view.object, ... ){
+view.train.ElasticNet <- function(labels, view.object, nfolds){
   
   view.object$model <- cv.glmnet( view.object$data.matrix[ids,]
                                   ,as.factor(labels[ids,1]), family=view.object$family
@@ -261,7 +253,7 @@ view.train.ElasticNet <- function(labels, view.object, ... ){
                                   ,keep=TRUE)
   return(view.object)
 }
-view.train.RandomForest <- function( labels, view.object, nfolds=10 ){
+view.train.RandomForest <- function( labels, view.object, nfolds ){
   
   view.object$model <- randomForest( view.object$data.matrix[ids,], 
                                      as.factor(labels[ids,1]), 
@@ -269,7 +261,7 @@ view.train.RandomForest <- function( labels, view.object, nfolds=10 ){
                                      ntree=view.object$ntree )
   return(view.object)
 }
-view.train.SupportVectorMachine <- function( labels, view.object, nfolds=10 ){
+view.train.SupportVectorMachine <- function( labels, view.object, nfolds ){
   ## TODO: UNTESTED
 # TODO: caret uses kernlab for svmRadialCost, so pick a different kernel. Oops ;)
 #  view.object$model <- e1071::svm(labels[ids,1] ~ ., data=view.object$data.matrix[ids,], 
