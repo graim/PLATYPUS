@@ -426,7 +426,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   if(flag.debug) { print(unique(for.model.predictions[,1])) } # Print the unique labels 
   preds.model       <- randomForest( labels ~ ., for.model.predictions, ntree=100,replace=TRUE)
   if(flag.debug) { print('Make stacked model predictions') }
-  preds.stckd       <- predict(preds.model, predictions, predict.all=TRUE)
+  preds.stckd       <- PLATYPUS::predict(preds.model, predictions, predict.all=TRUE) # TODO: possible to call package without explicitly naming it, in case we change name later?
   #preds.stckd       <- randomForest::predict.randomForest(preds.model, predictions, predict.all=TRUE)
   if(flag.debug) { print('Make preds.stckd') }
   preds.stacked.all <- preds.stckd$individual
