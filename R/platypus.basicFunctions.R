@@ -200,18 +200,6 @@ load.label.data.old <- function(fn.labs,delim='\t'){
   labs <- labs[!apply(labs,1,function(x){any(is.na(x))}),,drop=FALSE]
   return(labs)
 }
-## load the label file
-## TODO: Keeping for now so I can run old platypus - retire it once we've added mtl
-
-#' Load label data, removing the user-specified labels to ignore
-#' TODO This will eventually go away. Also TODO, this should be removing ignore labels... otherwise why bother having it?
-#' TODO Need to remove ignore.label factor level from the data, if it's present :)
-#'
-#' @param fn.labs File containing outcome labels
-#' @param classcol.labs Optional argument. Which column from the labels file to use for learning
-#' @param b Label class to ignore, if any. Defaults to 'intermediate'
-#' @return data frame containing label data
-#' @export
 load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
   # read file
   labs <- utils::read.table(fn.labs, sep=delim,header=TRUE, row.names=1, check.names=FALSE, stringsAsFactors = FALSE) 
@@ -251,9 +239,10 @@ get.unique.labels <- function(label.vec,ignore.label){
 #'
 #' @param labels label data
 #' @param view.object A view object
+#' @param nfolds Number of cross-validation folds
 #' @return Newly re-trained view object
 #' @export
-view.train <- function( labels, view.object ) {
+view.train <- function( labels, view.object, nfolds=10 ) {
   UseMethod("view.train",view.object)
 }
 #' Train an Elastic Net View
@@ -261,6 +250,7 @@ view.train <- function( labels, view.object ) {
 #'
 #' @param labels label data
 #' @param view.object A view object
+#' @param nfolds Number of cross-validation folds
 #' @return Newly re-trained view object
 #' @export
 view.train.ElasticNet <- function(labels, view.object, nfolds=10 ){

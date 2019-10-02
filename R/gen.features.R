@@ -40,7 +40,7 @@ generate.feature.data.summary <- function(gene.sample.data, feature.gene.matrix,
         # find max value of median, variance and kurtosis
         sample.feature.data[,feature] <- apply(gene.sample.data,1,
             function(sample) {
-              tmp.median     <- median(sample[colnames(gene.sample.data) %in% feature.genes])
+              tmp.median     <- stats::median(sample[colnames(gene.sample.data) %in% feature.genes])
               tmp.var     <- stats::var(sample[colnames(gene.sample.data) %in% feature.genes])
               tmp.kurtosis  <- e1071::kurtosis(sample[colnames(gene.sample.data) %in% feature.genes])
               max(tmp.median, tmp.var, tmp.kurtosis)
