@@ -11,6 +11,8 @@ TODO This is an internal fxn for platypus right, so probably shouldn't share it 
 \item{labels}{label data}
 
 \item{view.object}{A view object}
+
+\item{nfolds}{Number of cross-validation folds}
 }
 \value{
 Newly re-trained view object

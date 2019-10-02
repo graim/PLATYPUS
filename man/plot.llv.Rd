@@ -4,7 +4,7 @@
 \alias{plot.llv}
 \title{Given expanded output from CV and LLV tests, generate a label learning matrix and plot results}
 \usage{
-\method{plot}{llv}(fn.labs, folder)
+plot.llv(fn.labs, folder)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}

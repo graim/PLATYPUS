@@ -9,7 +9,6 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
   base::write(paste('data.fn',v,sep='\t'), file=fn.config, append=FALSE)
   base::write(paste('acc',x$Accuracy, sep='\t'), file=fn.config, append=TRUE)
   base::write(paste('taskname',task, sep='\t'), file=fn.config, append=TRUE)
-#  base::write(paste('drop','FALSE', sep='\t'), file=fn.config, append=TRUE) # TODO: Commented out for now, suspect I'm going to remove this from platypus altogether
 
   ## Things specific to this model type (e.g. ntrees)
   if(x$Model=='glmnet') { 
@@ -19,7 +18,6 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
   } else if(x$Model=='rf') { 
     base::write(paste('type','rf', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('mtry',x$mtry, sep='\t'), file=fn.config, append=TRUE)
-#    write(paste('ntree',x$ntree, sep='\t'), file=fn.config, append=TRUE) # rf model doesn't have ntree anymore
   } else if(x$Model=='svmRadialCost') { 
     base::write(paste('type','svm', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('C',x$C, sep='\t'), file=fn.config, append=TRUE)

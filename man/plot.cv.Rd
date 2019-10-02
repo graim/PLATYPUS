@@ -4,7 +4,7 @@
 \alias{plot.cv}
 \title{Given expanded output from CV tests, generate plots showing AUC change & labels learned.}
 \usage{
-\method{plot}{cv}(fn.labs, folder, plot.single.cvfolds = FALSE)
+plot.cv(fn.labs, folder, plot.single.cvfolds = FALSE)
 }
 \arguments{
 \item{fn.labs}{File containing outcome labels}

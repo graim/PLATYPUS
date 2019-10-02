@@ -5,12 +5,14 @@
 \title{Train one view, given a specific model type
 TODO This is an internal fxn for platypus right, so probably shouldn't share it with users?}
 \usage{
-view.train(labels, view.object)
+view.train(labels, view.object, nfolds = 10)
 }
 \arguments{
 \item{labels}{label data}
 
 \item{view.object}{A view object}
+
+\item{nfolds}{Number of cross-validation folds}
 }
 \value{
 Newly re-trained view object
