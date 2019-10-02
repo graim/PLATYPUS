@@ -18,6 +18,7 @@
 #' y <- c(rep('MOO',50),rep('OINK',50))
 #' names(y) <- paste0('Sample',seq(nrow(X)))
 #' rownames(X) <- paste0('Sample',seq(nrow(X)))
+#' colnames(X) <- paste0('Feature',seq(ncol(X)))
 #' y <- factor(y)
 #' res <- single.predictor(X,y,model='rf')
 #' res <- single.predictor(X,y,model='en')
