@@ -4,21 +4,23 @@
 #' @param v View data frame
 #' @param task Task name
 #' @param fn.config Filename of the config to be created
-write.config <- function(x,v,task,fn.config='config_TEST.txt') {
+write.config <- function(x,v,task,fn.config='config_TEST.txt',view.name=NA) {
   ## Things in all view model types
   base::write(paste('data.fn',v,sep='\t'), file=fn.config, append=FALSE)
   base::write(paste('acc',x$Accuracy, sep='\t'), file=fn.config, append=TRUE)
   base::write(paste('taskname',task, sep='\t'), file=fn.config, append=TRUE)
+  if(!is.na(view.name)) { base::write(paste('view.name',view.name,sep='\t'), file=fn.config, append=TRUE) }
 
   ## Things specific to this model type (e.g. ntrees)
-  if(x$Model=='glmnet') { 
+## TODO: seems like this should be automated
+  if(x$model=='glmnet') { 
     base::write(paste('type','en', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('alpha',x$alpha, sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('measure','auc', sep='\t'), file=fn.config, append=TRUE)
-  } else if(x$Model=='rf') { 
+  } else if(x$model=='rf') { 
     base::write(paste('type','rf', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('mtry',x$mtry, sep='\t'), file=fn.config, append=TRUE)
-  } else if(x$Model=='svmRadialCost') { 
+  } else if(x$model=='svmRadialCost') { 
     base::write(paste('type','svm', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('C',x$C, sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('kernel','svmRadialCost', sep='\t'), file=fn.config, append=TRUE) # TODO: allow different kernel types
@@ -26,13 +28,15 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
 #
 }
 
+# TODO: ignore.label currently isn't used in the fxn
 #' Generate configuration files for platypus
 #'
 #' @param view.data List of view data matrices. Must be named.
 #' @param tasks File containing all task labels, one column per task
 #' @param config.loc Where the config files should be stored
 #' @param model.type Type of classifier to use (select from en, rf, svm)
-#' @param view.names List of files containing view feature data
+#' @param view.filenames List of files containing view feature data
+#' @param view.names List of names for each view
 #' @param ignore.label Label to ignore in the task file (default 'intermediate')
 #' @param store Whether to store configs to file or not. Default FALSE.
 #'
@@ -58,11 +62,12 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
 #' fn.view.names <- list(Farm='Farm.tsv', Lion='Lion.tsv', Cat='Cat.tsv')
 #' 
 #' # Generate config files
-#' configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config') # If the data files don't already exist, use this
+#' # If the data files don't already exist, use this
+#' configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config')
 #' 
 #' # Generate config files
 #' gen.config(view.data[1], tasks[,1,drop=FALSE], model.type='en',config.loc='.')
-#' gen.config(view.data, tasks, model.type='en', view.names=fn.view.names,config.loc='.')
+#' gen.config(view.data, tasks, model.type='en', view.filenames=fn.view.names,config.loc='.')
 #' gen.config(view.data, tasks, model.type='en',config.loc='.') 
 #' gen.config(view.data, tasks, model.type='svm',config.loc='.')
 #' gen.config(view.data, tasks, model.type='rf',config.loc='.')
@@ -70,8 +75,7 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt') {
 #' @return List of config filenames, for use in platypus
 #'
 #' @export
-#gen.config <- function(view.names, fn.tasks, config.loc='config', model.type=c('en','rf','svm'), delim=',', delim.v='\t', n.iters=10, ignore.label='intermediate', nfolds=10, mtry=NA, ntree=c(500,1000,1500,2000)) {
-gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en','rf','svm'), view.names=NA, ignore.label='intermediate', store=FALSE) {
+gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en','rf','svm'), view.filenames=NA, view.names=NA, ignore.label='intermediate', store=FALSE) {
 
 ## Goals:
 ## view.data is list of data frames (data)
@@ -90,9 +94,15 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
 
   ## If view names not provided, make a named list of NA values for it. This is for convenience in code below.
   if(all(is.na(view.names))) {
-    view.names <- rep(NA, length(view.data))
-    names(view.names) <- names(view.data)
+    view.names <- paste0('View',1:length(view.data))
   }
+  names(view.names) <- names(view.data)
+
+  ## If view filenames not provided, make a named list of NA values for it. This is for convenience in code below.
+  if(all(is.na(view.filenames))) {
+    view.filenames <- rep(NA, length(view.data))
+  }
+  names(view.filenames) <- names(view.data)
 
 #  ## Set up options
 #  alpha.seq <- seq(0.1, 0.9, 0.1)
@@ -108,18 +118,19 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
   ## Main loop
   for( v in names(view.data)) {
     print(paste('View',v))
+    print(names(view.names))
     ## Load the view data
 #    X <- utils::read.table(v,sep=delim.v, header=TRUE, row.names=1,check.names=FALSE,stringsAsFactors=FALSE)
     X <- view.data[[v]]
 
     ## If view data filenames provided, use those. Otherwise store data to file in same directory as config files, and use that location
     ## TODO: Only store data files if user requests it? If we do that, need to figure out how to store in config file :/
-    if(is.na(view.names[[v]])) {
+    if(is.na(view.filenames[[v]])) {
       message('Location of this view data file is not provided, therefore storing data matrix to file in same location as configs.')
-      v <- paste0(v,'.tsv')
+      v.fn <- paste0(v,'.tsv')
       utils::write.table(X, file=v , sep="\t",row.names=TRUE, col.names=TRUE, quote=FALSE) #TODO: Only store files if user says to do so
     } else {
-      v <- view.names[[v]]
+      v.fn <- view.filenames[[v]]
     }
 
     for( task in colnames(tasks) ) {
@@ -131,9 +142,9 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
 
       ## Set up filename for this config
       fn.config <- switch(model.type,
-        en = file.path(config.loc, paste0('config_en_',task,'_',unlist(strsplit(basename(v),'.', fixed=TRUE))[1],'.txt')),
-        rf = file.path(config.loc, paste0('config_rf_',task,'_',unlist(strsplit(basename(v),'.', fixed=TRUE))[1],'.txt')),
-        svm= file.path(config.loc, paste0('config_svm_',task,'_',unlist(strsplit(basename(v),'.', fixed=TRUE))[1],'.txt'))
+        en = file.path(config.loc, paste0('config_en_',task,'_',v,'.txt')),
+        rf = file.path(config.loc, paste0('config_rf_',task,'_',v,'.txt')),
+        svm= file.path(config.loc, paste0('config_svm_',task,'_',v,'.txt'))
       )
       print( paste('Generating config ',fn.config) )
       fns.config <- c(fns.config, fn.config)
@@ -142,7 +153,7 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
       ## Parameter sweep based on task type
       res <- single.predictor(X[names(y),],y,model=model.type)
       if(store) {
-         write.config(res, v, task, fn.config=fn.config)
+         write.config(res, v.fn, task, fn.config=fn.config, view.name=view.names[[v]])
       }
       rm(res) # TODO: instead of deleting, add to list and return object
       

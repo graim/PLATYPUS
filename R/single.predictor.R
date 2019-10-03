@@ -53,7 +53,7 @@ single.predictor <- function(X,y,model,ignore.label='intermediate') {
   ## Parameter sweep and return 'best' model
   res.model <- caret::train(x = X, y = y, method=model, preProcess = 'center', metric = 'Accuracy', trControl = caret::trainControl(method = 'repeatedcv', number = 10))
   res <- res.model$results[which(res.model$results$Accuracy == max(res.model$results$Accuracy))[1],]
-  res$Model <- model # For gen.config use
+  res$model <- model # For gen.config use
   return( res )
 #  return(res.model$results[which(res.model$results$Accuracy == max(res.model$results$Accuracy))[1],])
 

@@ -5,8 +5,8 @@
 \title{Generate configuration files for platypus}
 \usage{
 gen.config(view.data, tasks, config.loc = "config",
-  model.type = c("en", "rf", "svm"), view.names = NA,
-  ignore.label = "intermediate", store = FALSE)
+  model.type = c("en", "rf", "svm"), view.filenames = NA,
+  view.names = NA, ignore.label = "intermediate", store = FALSE)
 }
 \arguments{
 \item{view.data}{List of view data matrices. Must be named.}
@@ -17,7 +17,9 @@ gen.config(view.data, tasks, config.loc = "config",
 
 \item{model.type}{Type of classifier to use (select from en, rf, svm)}
 
-\item{view.names}{List of files containing view feature data}
+\item{view.filenames}{List of files containing view feature data}
+
+\item{view.names}{List of names for each view}
 
 \item{ignore.label}{Label to ignore in the task file (default 'intermediate')}
 
@@ -50,11 +52,12 @@ tasks <- as.data.frame(y)
 fn.view.names <- list(Farm='Farm.tsv', Lion='Lion.tsv', Cat='Cat.tsv')
 
 # Generate config files
-configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config') # If the data files don't already exist, use this
+# If the data files don't already exist, use this
+configs <- gen.config(view.data, tasks[,1,drop=FALSE], model.type='en', config.loc='config')
 
 # Generate config files
 gen.config(view.data[1], tasks[,1,drop=FALSE], model.type='en',config.loc='.')
-gen.config(view.data, tasks, model.type='en', view.names=fn.view.names,config.loc='.')
+gen.config(view.data, tasks, model.type='en', view.filenames=fn.view.names,config.loc='.')
 gen.config(view.data, tasks, model.type='en',config.loc='.') 
 gen.config(view.data, tasks, model.type='svm',config.loc='.')
 gen.config(view.data, tasks, model.type='rf',config.loc='.')

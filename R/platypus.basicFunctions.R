@@ -2,21 +2,21 @@
 
 ## Subset to k most variable features
 ## TODO: Do we really need to provide this??
-drop.features <- function(dat, k) {
-  if(ncol(dat) > k ) {
-    vars <- apply(dat, 2, stats::var)
-    vars <- sort(vars, decreasing=TRUE)
-    thresh <- vars[k]
-    dat <- dat[,names(which(vars>=thresh))]
-    write( paste('Shrinking to', k, 'most variable features...\n', ncol(dat)), stdout() )
-    if(ncol(dat) > k) {
-      write( paste('NOTE: Many variables have the same variance, so', ncol(dat), 'variables were kept\n'), stdout() )
-    }
-  } else {
-    write(paste('WARNING: Data matrix already has', k, 'features\n'),stdout() )
-  }
-  return(dat)
-}
+#drop.features <- function(dat, k) {
+#  if(ncol(dat) > k ) {
+#    vars <- apply(dat, 2, stats::var)
+#    vars <- sort(vars, decreasing=TRUE)
+#    thresh <- vars[k]
+#    dat <- dat[,names(which(vars>=thresh))]
+#    write( paste('Shrinking to', k, 'most variable features...\n', ncol(dat)), stdout() )
+#    if(ncol(dat) > k) {
+#      write( paste('NOTE: Many variables have the same variance, so', ncol(dat), 'variables were kept\n'), stdout() )
+#    }
+#  } else {
+#    write(paste('WARNING: Data matrix already has', k, 'features\n'),stdout() )
+#  }
+#  return(dat)
+#}
 
 ## TODO Make a platypus object class, as well as cv.platypus and llv.platypus
 # fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE
@@ -33,7 +33,7 @@ drop.features <- function(dat, k) {
 
 
 ## create a class for each view-type
-ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measure="auc",drop=TRUE,drop.to=5000,model=c(),acc=0.5, acc.norm=0, family='binomial') {
+ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measure="auc",drop=TRUE,drop.to=5000,model=c(),acc=0.5, acc.norm=0, family='binomial', view.name=NA) {
   me <- list(
     param.file = param.file,
     data.matrix = data.matrix,
@@ -45,7 +45,8 @@ ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measur
     drop.to = drop.to,
     model = model,
     acc = acc,
-    acc.norm = acc.norm
+    acc.norm = acc.norm,
+    view.name = view.name
   )
   
   ## Set the name for the class
@@ -53,7 +54,7 @@ ElasticNet <- function(param.file="",data.matrix=c(),data.fn="",alpha=0.9,measur
   return(me)
 }
 
-RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",ntree=500,drop=TRUE,drop.to=5000,model=c(),acc=0.5,acc.norm=0) {
+RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",ntree=500,drop=TRUE,drop.to=5000,model=c(),acc=0.5,acc.norm=0, view.name=NA) {
   me <- list(
     param.file = param.file,
     data.matrix = data.matrix,
@@ -64,7 +65,8 @@ RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",nt
     drop.to = drop.to,
     model = model,
     acc = acc,
-    acc.norm = acc.norm
+    acc.norm = acc.norm,
+    view.name = view.name
   )
   
   ## Set the name for the class
@@ -73,7 +75,7 @@ RandomForest <- function(param.file="",data.matrix=c(),data.fn="",mtry="sqrt",nt
 }
 
 ## TODO: unfinished, untested
-SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=c(),acc=0.5,accSD=0,C=1) {
+SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=c(),acc=0.5,accSD=0,C=1, view.name=NA) {
   me <- list(
     param.file = param.file,
     data.matrix = data.matrix,
@@ -81,7 +83,8 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
     C = C,
     model = model,
     acc = acc,
-    accSD = accSD
+    accSD = accSD,
+    view.name = view.name
   )
 
   ## Set the name for the class
@@ -103,7 +106,7 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
 load.parameterfile <- function(filename, delim='\t'){
  
   # Load parameters file 
-  param.table <- utils::read.table(filename, sep='\t',header=FALSE, row.names=1)
+  param.table <- utils::read.table(filename, sep='\t',header=FALSE, row.names=1, stringsAsFactors=FALSE)
   
   # Check the type and create a view object, set type-specific parameters
   type <- param.table["type",1]
@@ -126,68 +129,38 @@ load.parameterfile <- function(filename, delim='\t'){
   }
 
   # Parameters common to all view types
-  if("drop" %in% rownames(param.table)){ view.object$drop <- as.logical(param.table["drop",1]) } # TODO: Remove this option
-  if("drop.to" %in% rownames(param.table)){ view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1])) } # TODO: Remove this option
+  if("view.name" %in% rownames(param.table)){ view.object$view.name <- param.table["view.name",1] }
   if("acc" %in% rownames(param.table)){ view.object$acc <- as.numeric(as.character(param.table["acc",1])) }
   if("data.fn" %in% rownames(param.table)){ view.object$data.matrix <- data.matrix( utils::read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) ) } # TODO: Do we really want to force everything to be numeric???
+#  if("drop" %in% rownames(param.table)){ view.object$drop <- as.logical(param.table["drop",1]) } # TODO: Remove this option
+#  if("drop.to" %in% rownames(param.table)){ view.object$drop.to <- as.numeric(as.character(param.table["drop.to",1])) } # TODO: Remove this option
 
   return(view.object)
 }
 
 
 ## load the feature matrix from file to a matrix object
-## TODO: Do we really need these fxns??
 load.data <- function(view.object){
+
+  # read the matrix from the file
+  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   UseMethod("load.data",view.object)
+ 
+ # set the matrix
+  view.object$data.matrix <- mat
 }
 load.data.ElasticNet <- function(view.object,delim='\t'){
-  # read the matrix from the file
-  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim, header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Elastic Net view',view.object$data.fn))
-  
-  # drop features
-  if(view.object$drop){
-    mat <- drop.features(mat, view.object$drop.to)
-  }
-  
-  # set the matrix
-  view.object$data.matrix <- mat
-  
   return(view.object)
 }
 load.data.RandomForest <- function(view.object,delim='\t'){
-  # read the matrix from the file
-  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for Random Forest view',view.object$data.fn))
-  
-  # drop features
-  if(view.object$drop){
-    mat <- drop.features(mat, view.object$drop.to)
-  }
-  
-  # set the matrix
-  view.object$data.matrix <- mat
-  
   # set mtry parameter to sqrt(#features) if default
-  if(view.object$mtry == "sqrt"){
-    view.object$mtry <- floor(sqrt(ncol(mat)))
-    #view.object <- setMtry(view.object,floor(sqrt(ncol(mat))))
-  }
+  if(view.object$mtry == "sqrt"){ view.object$mtry <- floor(sqrt(ncol(mat))) }
   return(view.object)
 }
 load.data.SupportVectorMachine <- function(view.object,delim='\t'){
-  # read the matrix from the file
-  mat <- data.matrix( utils::read.table(view.object$data.fn, sep=delim,header=TRUE, row.names=1, check.names=FALSE) )
   print(paste('data loaded for SVM view',view.object$data.fn))
-
-  # drop features
-  if(view.object$drop){
-    mat <- drop.features(mat, view.object$drop.to)
-  }
-
-  # set the matrix
-  view.object$data.matrix <- mat
-
   return(view.object)
 }
 
@@ -211,25 +184,20 @@ load.label.data <- function(fn.labs,classcol.labs, delim='\t'){
 ## retrieve the two labels for training/predicting
 get.unique.labels <- function(label.vec,ignore.label){
 
-  #print(paste('ignoring',ignore.label))
   ## Get the the two labels
   unique.labels <- unique(label.vec)
   
   # exclude a label if given by ignore.label, e.g. 'intermediate'
-  if(ignore.label %in% unique.labels){
-    unique.labels <- unique.labels[-c(which(unique.labels == ignore.label))]
-  }
+  if(ignore.label %in% unique.labels){ unique.labels <- unique.labels[-c(which(unique.labels == ignore.label))] }
+
   # exclude label 'testing' - this is introduced by cv.platypus() to mark the test set
-  if('testing' %in% unique.labels){
-    unique.labels <- unique.labels[-c(which(unique.labels == 'testing'))]
-  }
+  if('testing' %in% unique.labels){ unique.labels <- unique.labels[-c(which(unique.labels == 'testing'))] }
 
   unique.labels <- as.vector(sort(unique.labels))
-  #print(unique.labels)
   
   # MVL classification for 2 labels
   if(length(unique.labels) != 2){
-    print(paste0("ATTENTION: ",length(unique.labels)," labels for a binary task. Results might not be correct!"))
+    print(paste0("WARNING: ",length(unique.labels)," labels for a binary task. Results might not be correct!"))
   }
   return(unique.labels)
 }
@@ -280,7 +248,7 @@ view.predict <- function(ids.unlabelled, view.object) {
   UseMethod("view.predict",view.object)
 }
 view.predict.ElasticNet <- function(ids.unlabelled, view.object) {
-  
+  # TODO: update to use caret?
   if(length(ids) > 0){
     return( glmnet::predict.cv.glmnet(view.object$model, view.object$data.matrix[ids,,drop=FALSE], type='class', s='lambda.min') )  # TODO: use lambdaMin or default s="lambda.1se" ?  # TODO: changed to predict.cv.glmnet but not tested, from predict()
   }
@@ -296,7 +264,6 @@ view.predict.RandomForest <- function(ids.unlabelled, view.object) {
   return(as.character(c()))
 }
 view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
-  ## TODO: UNTESTED
   if(length(ids) > 0){
     #return( as.character( e1071::predict.svm(view.object$model, view.object$data.matrix[ids,,drop=FALSE])  ) )
     return( as.character( kernlab::predict(view.object$model, view.object$data.matrix[ids,,drop=FALSE]) ) )
@@ -307,7 +274,7 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
 
 
 ### PLATYPUS has 2 options for label learning- either using a stacked model or our homebrew optimization function (the ensemble approach)
-## TODO: This function should also be something the user can use to make new predictions, given a set of views?
+## TODO: This function should also be something the user can use to make new predictions, given a set of views? If I do that, remove the unique.labels option???
 #' Given a trained platypus model, make predictions. Generally used internally by platypus
 #'
 #' @param view.list List of views to use for predictions
@@ -323,8 +290,7 @@ view.predict.SupportVectorMachine <- function(ids.unlabelled, view.object) {
 platypus.predict <- function(view.list, majority, test.ids,unique.labels,labels,join.fxn='ensemble'){
   if(join.fxn=='ensemble') { return(platypus.predict.ensemble(view.list, majority, test.ids,unique.labels)) }
   else if(join.fxn=='stacked') { return(platypus.predict.stacked(view.list, majority, test.ids,unique.labels,labels)) }
-  else {} # Only can handle ensemble/stacked learning for now TODO add error message & gracefully quit
-
+  else { stop("ERROR: Can only predict using 'ensemble' or 'stacked' predict options.") } # Only can handle ensemble/stacked learning for now
 }
 
 ## 20180709 - Kiley updates to add in stacked learning
