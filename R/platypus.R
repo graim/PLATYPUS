@@ -78,7 +78,11 @@ platypus <- function(fn.labs, view.list, b='intermediate', i=100, m=100, e=FALSE
   new.labels <- c()
   
   # number of views, which have to agree on a prediction, to take it into the training data
-  view.list <- normalize.accuracies(view.list)
+  #view.list <- normalize.accuracies(view.list)
+  for(view.i in seq(length(view.list))){
+    view.list[[view.i]]$acc.norm <- normalize.accuracy.log(view.list[[view.i]]$acc)
+  }
+
 
   sum.acc <- 0
   for(view.i in seq(length(view.list))){

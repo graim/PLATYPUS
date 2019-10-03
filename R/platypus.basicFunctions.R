@@ -1,7 +1,6 @@
 ## Basic Functions for the MVL framework
 
 ## Subset to k most variable features
-## TODO: Do we really need to provide this??
 #drop.features <- function(dat, k) {
 #  if(ncol(dat) > k ) {
 #    vars <- apply(dat, 2, stats::var)
@@ -20,13 +19,16 @@
 
 ## TODO Make a platypus object class, as well as cv.platypus and llv.platypus
 # fn.labs, view.list, ignore.label='intermediate', i=100, m=100, u=FALSE, e=FALSE,updating=FALSE,expanded.output=FALSE
-# Careful- we already define platypus() as a function for mvl
-#Platypus <- function(labs, views, iters=NA) {
-#  if (is.na(iters)) iters <- 10
-#  if (!is.character(labs)) stop("labs must be character")
-#  if (!is.list(views)) stop("views must be a list")
-#  if (!all(is.character(sapply(views,class)))) stop('views must be a list of strings')
-#  if(!is.numeric(iters)) stop ('iters must be numeric')
+#platypus <- function(labs, views, iters=10) {
+#  me <- list(
+#    iters = iters,
+#    labs = labs,
+#    views = views
+#  )
+#  ## Set the name for the class
+#  class(me) <- append(class(me),"platypus")
+#  return(me)
+#}
 #  structure(list(views=views,labs=labs,iters=iters), class = "foo")
 #}
 #platypus('moo', list('oink','baa'))
@@ -93,8 +95,6 @@ SupportVectorMachine <- function(param.file="",data.matrix=c(),data.fn="",model=
 }
 
 ## Read in the parameter file for a view and return a view object
-## TODO: Add in option for view name
-## TODO: add in SVM models
 ## TODO: Add in option for task name
 #' Create a view from a configuration file
 #'
@@ -122,8 +122,6 @@ load.parameterfile <- function(filename, delim='\t'){
     message('SVMs are not tested yet, be warned.')
     view.object <- SupportVectorMachine(param.file=filename, data.fn=toString(param.table["data.fn",1]))
     if("C" %in% rownames(param.table)) { view.object$C <- as.numeric(as.character(param.table["ntree",1])) }
-    #stop("Sorry, SVMs are not working yet!")
-    ## TODO: implement svm types :)
   } else { 
     stop(paste("Could not find valid type specification in parameter file:",filename,"; Valid types are: rf, en, svm."))
   }
@@ -312,7 +310,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   if(flag.debug) { print('platypus.predict') }
   #  predictions is the data frame of samples (rows) by views label predictions (eg. sensitive/non-sensitive)
   ## Make per-view predictions
-  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids,sapply(view.list, function(x){x$view.name})))
   for(view.i in seq(length(view.list))){
     ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
     if(length(ids) > 0){
@@ -337,11 +335,6 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
   if(flag.debug) { print('Created category.all and category.majority') }
 
   ## Build the stacked model, get predictions of samples w/greater or equal to threshodl agreement levels
-  #if(!require(randomForest)) {
-  #  install.packages('randomForest')
-    #library(randomForest)
-  #}
-  #require(randomForest) 
   #for.model.predictions <- cbind(labels=labels[ids,1], predictions[ids,]) # Combine labels and predictions from each view to train the stacked model
   for.model.predictions <- cbind(labels=labels[rownames(predictions),1], predictions) # Combine labels and predictions from each view to train the stacked model
   #print(paste('Class for.model.predictions',class(for.model.predictions)))
@@ -411,7 +404,7 @@ platypus.predict.stacked <- function(view.list, majority, test.ids,unique.labels
 platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.labels){
   flag.debug <- FALSE
 
-  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids, paste0("view.",seq(length(view.list))))) # TODO: Update 'view.' to be view names
+  predictions <- matrix(data=NA, nrow=length(test.ids), ncol=length(view.list),dimnames=list(test.ids,sapply(view.list, function(x){x$view.name})))
   for(view.i in seq(length(view.list))){
     ids <- intersect(test.ids,rownames(view.list[[view.i]]$data.matrix))
     if(length(ids) > 0){
@@ -439,7 +432,7 @@ platypus.predict.ensemble <- function(view.list, majority, test.ids,unique.label
     print('Dimensions of test.ids, predictions, final, category.all, category.majority:')
     print(length(test.ids))
     print(dim(predictions))
-    print(length(final)) # TODO: Final in this version is a list, in stacked version is matrix. update!
+    print(length(final)) # NOTE: Final in this version is a list, in stacked version is matrix. update!
     print(length(category.all))
     print(length(category.majority))
   
@@ -602,19 +595,17 @@ get.new.labels.majorityWeighted <- function(predictions,view.list,unique.labels)
 }
 
 ## normalize accuracies from [0.5,1] to [0,1] and log-transform them
-## TODO: Do I need this? Really only call it 1 time
-## TODO: I changed this, make sure it actually works
-normalize.accuracies <- function(view.list){
-  for(view.i in seq(length(view.list))){
-    view.list[[view.i]]$acc.norm <- normalize.accuracy.log(view.list[[view.i]]$acc)
-  }
-  return(view.list)
-}
+#normalize.accuracies <- function(view.list){
+#  for(view.i in seq(length(view.list))){
+#    view.list[[view.i]]$acc.norm <- normalize.accuracy.log(view.list[[view.i]]$acc)
+#  }
+#  return(view.list)
+#}
 
 # normalize to range [0,1] and log-transform
 normalize.accuracy.log <- function(acc){
   if(is.na(acc)) {
-    stop(paste0("Non-numeric accuracy value")) #TODO: TEMP
+    stop(paste0("ERROR: Non-numeric accuracy value:",acc))
   }
   if(acc >= 0 & acc <= 1){
     if(acc <= 0.5) { 
@@ -626,7 +617,7 @@ normalize.accuracy.log <- function(acc){
     acc.norm <- (acc - 0.5) / (1-0.5)
     acc.norm <- -log(1-acc.norm)
   } else{
-    stop(paste0("Accuracy value not between 0.5 and 1"))
+    stop(paste0("ERROR: Accuracy value not between 0.5 and 1"))
   }
   return(acc.norm)
 }
