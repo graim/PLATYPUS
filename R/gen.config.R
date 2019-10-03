@@ -24,7 +24,7 @@ write.config <- function(x,v,task,fn.config='config_TEST.txt',view.name=NA) {
     base::write(paste('type','svm', sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('C',x$C, sep='\t'), file=fn.config, append=TRUE)
     base::write(paste('kernel','svmRadialCost', sep='\t'), file=fn.config, append=TRUE) # TODO: allow different kernel types
-  } else { message('Model type unknown to platypus.') } #TODO: stop not message?
+  } else { message('WARNING: Model type unknown to platypus.') }
 #
 }
 
@@ -112,8 +112,6 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
 
   ## Store list of config filenames for returning
   fns.config <- list()
-#  ## Store list of configs for returning
-#  configs <- list()
 
   ## Main loop
   for( v in names(view.data)) {
@@ -124,11 +122,10 @@ gen.config <- function(view.data, tasks, config.loc='config', model.type=c('en',
     X <- view.data[[v]]
 
     ## If view data filenames provided, use those. Otherwise store data to file in same directory as config files, and use that location
-    ## TODO: Only store data files if user requests it? If we do that, need to figure out how to store in config file :/
     if(is.na(view.filenames[[v]])) {
-      message('Location of this view data file is not provided, therefore storing data matrix to file in same location as configs.')
+      message('Data filepath not in config, writing data matrix to file in same location as configs.')
       v.fn <- paste0(v,'.tsv')
-      utils::write.table(X, file=v , sep="\t",row.names=TRUE, col.names=TRUE, quote=FALSE) #TODO: Only store files if user says to do so
+      utils::write.table(X, file=v , sep="\t",row.names=TRUE, col.names=TRUE, quote=FALSE)
     } else {
       v.fn <- view.filenames[[v]]
     }
